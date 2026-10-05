@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="playground.css">
+    <title> Playground </title>
+</head>
+<!-- Script to handle opening & closing the drawer -->
+
+</body>
+</html>
+<body>
+
+    <div class="playground-backdrop"></div>
+    <div class="playground-container">
+        <header class="header-bar">
+            <div class="brand-section">
+                <div class="brand-logo" title="Model Playground">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <span class="brand-title">Model Playground</span>
+            </div>
+
+            <!-- Center Controls / Model Identifier -->
+            <div class="model-controls">
+                <input type="text" id="modelNameInput" class="model-name-input" value="customModel" title="Model Name">
+                <select id="frameworkSelector" class="dropdown-select" title="Target Framework & Version">
+                    <option value="pytorch_2">PyTorch 2.x (nn.Module)</option>
+                    <option value="keras_3">Keras 3 / TensorFlow (Functional)</option>
+                    <option value="onnx">ONNX Graph Spec</option>
+                </select>
+                <span class="info-icon" title="Supported Versions" data-tooltip="Supported formats:&#10;• Images: PNG, JPG, WEBP&#10;• Documents: PDF, DOCX, TXT&#10;• Audio: MP3, WAV">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                  </svg>
+                </span>
+            </div>
+
+
+            <div class="header-actions">
+                <button id="btnToggleCode" class="btn-moon btn-moon-primary">View Code</button>
+
+                <button id="btnClear" class="btn-moon" title="Reset workspace">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    Clear
+                </button>
+            </div>
+        </header>
+        <aside id="codeDrawer" class="code-drawer hidden">
+            <!-- Drawer Header -->
+            <div class="code-drawer-header">
+                <div class="code-drawer-title">
+                    <span>Model Code</span>
+                    <span class="brand-badge" id="codeFormatBadge">{PyTorch 2.x}</span>
+                </div>
+                <div class="drawer-actions">
+                    <button id="btnCopyCode" class="btn-moon btn-sm" title="Copy Code">Copy</button>
+                    <button id="btnExport" class="btn-moon btn-sm" title="Export .py">Export</button>
+                    <button id="btnCloseDrawer" class="tool-btn" title="Close Drawer">✕</button>
+                </div>
+            </div>
+
+            <pre class="code-editor-area" id="codeOutput">
+        <code># Generated code will appear here</code>
+    </pre>
+        </aside>
+    </div>
+    <script>
+        const drawer = document.getElementById("codeDrawer");
+        const openBtn = document.getElementById("btnToggleCode");
+        const closeBtn = document.getElementById("btnCloseDrawer");
+
+        // When "View Code" is clicked -> Remove .hidden to slide in
+        openBtn.addEventListener("click", () => {
+            drawer.classList.remove("hidden");
+        });
+
+        // When "✕" is clicked -> Add .hidden back to slide out
+        closeBtn.addEventListener("click", () => {
+            drawer.classList.add("hidden");
+        });
+    </script>
+</body>
+</html>
