@@ -306,12 +306,11 @@ body {
    ===================================================================== */
 .workspace-grid {
     display: grid;
-    grid-template-columns: 270px 1fr 370px;
+    grid-template-columns: 270px 1fr;  /* 270px for Palette, 1fr for Canvas */
     flex: 1;
-    height: calc(100vh - 56px);
+    height: calc(100vh - 56px);        /* Full viewport height minus 56px header */
     overflow: hidden;
 }
-
 /* =====================================================================
    LEFT SIDEBAR: LAYER PALETTE
    ===================================================================== */

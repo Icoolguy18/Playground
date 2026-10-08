@@ -11,7 +11,6 @@
 </body>
 </html>
 <body>
-
     <div class="playground-backdrop"></div>
     <div class="playground-container">
         <header class="header-bar">
@@ -54,6 +53,136 @@
                 </button>
             </div>
         </header>
+        <!-- =====================================================================
+     MAIN BODY WORKSPACE
+     ===================================================================== -->
+        <main class="workspace-grid">
+
+            <!-- =================================================================
+                 COMPONENT A: LAYER SELECTION PALETTE
+                 ================================================================= -->
+            <aside class="panel-sidebar">
+                <div class="panel-header">
+                    <span class="panel-title">Layer Palette</span>
+                    <span class="brand-badge" id="layerCountBadge">8 Layers</span>
+                </div>
+
+                <!-- Search Filter -->
+                <div class="search-box">
+                    <input type="text" id="layerSearch" class="search-input" placeholder="Search layers (Conv, Dense...)" autocomplete="off">
+                </div>
+
+                <!-- Palette Scroll Area -->
+                <div class="palette-scroll" id="paletteList">
+
+                    <!-- 1. Input & Reshaping -->
+                    <div class="category-group">
+                        <div class="category-title">Input & Reshaping</div>
+                        <div class="layer-card" draggable="true" data-type="Input">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-input">IN</span>
+                                <span class="layer-name">Input Tensor</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                        <div class="layer-card" draggable="true" data-type="Flatten">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-linear">FL</span>
+                                <span class="layer-name">Flatten</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                    </div>
+
+                    <!-- 2. Convolutional -->
+                    <div class="category-group">
+                        <div class="category-title">Convolutional</div>
+                        <div class="layer-card" draggable="true" data-type="Conv2d">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-conv">C2</span>
+                                <span class="layer-name">Conv2d</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                        <div class="layer-card" draggable="true" data-type="MaxPool2d">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-conv">MP</span>
+                                <span class="layer-name">MaxPool2d</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. Linear & Normalization -->
+                    <div class="category-group">
+                        <div class="category-title">Linear & Normalization</div>
+                        <div class="layer-card" draggable="true" data-type="Linear">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-linear">FC</span>
+                                <span class="layer-name">Linear (Dense)</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                        <div class="layer-card" draggable="true" data-type="Dropout">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-linear">DO</span>
+                                <span class="layer-name">Dropout</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                        <div class="layer-card" draggable="true" data-type="BatchNorm2d">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-norm">BN</span>
+                                <span class="layer-name">BatchNorm2d</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. Activations -->
+                    <div class="category-group">
+                        <div class="category-title">Activations</div>
+                        <div class="layer-card" draggable="true" data-type="ReLU">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-activation">RL</span>
+                                <span class="layer-name">ReLU</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                        <div class="layer-card" draggable="true" data-type="Softmax">
+                            <div class="layer-info">
+                                <span class="layer-icon-badge badge-activation">SM</span>
+                                <span class="layer-name">Softmax</span>
+                            </div>
+                            <span class="drag-handle">⠿</span>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- =================================================================
+                 COMPONENT B: DISPLAY & CONNECTIONS CANVAS
+                 ================================================================= -->
+            <section class="canvas-container" id="canvasContainer">
+
+                <!-- Floating Canvas Navigation Tools -->
+                <div class="canvas-toolbar">
+                    <button class="tool-btn" id="btnZoomIn" title="Zoom In">+</button>
+                    <button class="tool-btn" id="btnZoomOut" title="Zoom Out">−</button>
+                    <button class="tool-btn" id="btnResetView" title="Reset View">⊙</button>
+                    <span style="width: 1px; height: 16px; background: var(--border-moon-medium); margin: 0 4px;"></span>
+                    <button class="tool-btn" id="btnAutoLayout" title="Auto Align">⌥</button>
+                </div>
+
+                <!-- SVG Connection Overlay: For drawing curved Bezier lines between blocks -->
+                <svg class="connections-layer" id="svgConnectionsLayer"></svg>
+
+                <!-- Viewport: The coordinate space where dropped layer blocks live -->
+                <div class="graph-viewport" id="graphViewport"></div>
+
+            </section>
+        </main>
         <aside id="codeDrawer" class="code-drawer hidden">
             <!-- Drawer Header -->
             <div class="code-drawer-header">
