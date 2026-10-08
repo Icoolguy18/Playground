@@ -302,19 +302,21 @@ body {
 }
 
 /* =====================================================================
-   MAIN WORKSPACE LAYOUT (3 Panels)
+   MAIN WORKSPACE LAYOUT
    ===================================================================== */
 .workspace-grid {
-    display: grid;
-    grid-template-columns: 270px 1fr;  /* 270px for Palette, 1fr for Canvas */
+    display: flex;
     flex: 1;
     height: calc(100vh - 56px);        /* Full viewport height minus 56px header */
     overflow: hidden;
+    position: relative;
 }
 /* =====================================================================
    LEFT SIDEBAR: LAYER PALETTE
    ===================================================================== */
 .panel-sidebar {
+    width: 270px;
+    flex-shrink: 0;
     background: var(--bg-surface-glass);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -322,6 +324,14 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+/* Collapsed state: slides off-screen smoothly letting canvas expand */
+.panel-sidebar.collapsed {
+    margin-left: -270px;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .panel-header {
@@ -451,6 +461,8 @@ body {
    CENTER CANVAS: GRAPH & INTERACTION AREA
    ===================================================================== */
 .canvas-container {
+    flex: 1;
+    height: 100%;
     position: relative;
     background-color: #070a13;
     /* Subtle Moonlight Isometric/Dot Matrix Grid */
