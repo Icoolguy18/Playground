@@ -1,5 +1,6 @@
 // components/nodes/nodeManager.js
-import { BADGE_MAP, DEFAULT_MAP } from '../constants.js';
+import { BADGE_MAP, DEFAULT_PARAMS } from '../constants.js';
+import { connectionManager } from '../ConnectionManager.js';
 
 let nodeIdCounter = 1;
 
@@ -11,13 +12,11 @@ export function spawnNode(type, x, y) {
     const name = `${type.toLowerCase()}_${nodeIdCounter}`;
     nodeIdCounter++;
 
-    // Use exact match or ensure constants match casing
     const badgeClass = BADGE_MAP[type] || "badge-linear";
     const shortCode = type.substring(0, 2).toUpperCase();
-    const params = DEFAULT_MAP[type] || {};
+    const params = DEFAULT_PARAMS[type] || {};
 
-    // Build parameter rows
-    const paramRows = Object.entries(params).map(([key, val]) => `
+    const paramRows = Object.entries(params).map(([key, val] ) => `
         <div class="node-param-row">
             <span class="node-param-label">${key}</span>
             <span class="node-param-val">${val}</span>
@@ -29,7 +28,6 @@ export function spawnNode(type, x, y) {
         </div>
     `;
 
-    // Create node element
     const node = document.createElement("div");
     node.className = "graph-node";
     node.id = id;
@@ -48,17 +46,18 @@ export function spawnNode(type, x, y) {
         <div class="socket socket-output"></div>
     `;
 
-    // Delete button handler
+    // Delete button handler (Fixed: passed `node` to remove wires)
     node.querySelector(".node-delete-btn").addEventListener("click", (e) => {
         e.stopPropagation();
+        connectionManager.removeNodeConnections(node);
         node.remove();
         updateLayerCount();
     });
 
-    // Enable dragging
     enableNodeDrag(node);
 
     viewport.appendChild(node);
+    connectionManager.attachSocketListeners(node);
     updateLayerCount();
 }
 
@@ -79,12 +78,16 @@ function enableNodeDrag(node) {
         e.preventDefault();
     });
 
+    // Single unified mousemove handler (Fixed: combined movement & wire updating)
     window.addEventListener("mousemove", (e) => {
         if (!isDragging) return;
         const dx = e.clientX - startMouseX;
         const dy = e.clientY - startMouseY;
         node.style.left = `${Math.max(0, startNodeX + dx)}px`;
         node.style.top = `${Math.max(0, startNodeY + dy)}px`;
+
+        // Live update wires connected to this node using lowercase instance
+        connectionManager.updateNodeConnections(node);
     });
 
     window.addEventListener("mouseup", () => {

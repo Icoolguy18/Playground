@@ -783,6 +783,22 @@ body {
     white-space: pre;
 }
 
+.connection-path {
+    fill: none;
+    stroke: var(--accent-color, #4f46e5);
+    stroke-width: 2.5px;
+    pointer-events: none; /* Let clicks pass through wires */
+}
+
+.temp-wire {
+    stroke-dasharray: 4;
+    animation: dashLoop 1s linear infinite;
+}
+
+@keyframes dashLoop {
+    to { stroke-dashoffset: -8; }
+}
+
 /* Syntax Highlighting Tints (Moonlight Aesthetic) */
 .kw { color: #93c5fd; font-weight: 600; }     /* Keyword (soft sky blue) */
 .cls { color: #f8fafc; font-weight: 700; }    /* Class name (pure moonlit white) */

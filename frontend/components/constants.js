@@ -10,7 +10,7 @@ export const BADGE_MAP = {
     "Softmax":     "badge-activation"
 };
 
-export const DEFAULT_MAP= {
+export const DEFAULT_PARAMS= {
     "Input":       { shape: "(3, 224, 224)" },
     "Conv2d":      { in_channels: 3,   out_channels: 32, kernel: 3 },
     "MaxPool2d":   { kernel: 2, stride: 2 },
