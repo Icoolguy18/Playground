@@ -1,5 +1,5 @@
 // components/nodes/nodeManager.js
-import { BADGE_MAP, DEFAULT_PARAMS } from '../constants.js';
+import { BADGE_MAP, DEFAULT_MAP } from '../constants.js';
 
 let nodeIdCounter = 1;
 
@@ -14,7 +14,7 @@ export function spawnNode(type, x, y) {
     // Use exact match or ensure constants match casing
     const badgeClass = BADGE_MAP[type] || "badge-linear";
     const shortCode = type.substring(0, 2).toUpperCase();
-    const params = DEFAULT_PARAMS[type] || {};
+    const params = DEFAULT_MAP[type] || {};
 
     // Build parameter rows
     const paramRows = Object.entries(params).map(([key, val]) => `
