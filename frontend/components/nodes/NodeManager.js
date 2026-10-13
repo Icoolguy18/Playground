@@ -1,6 +1,10 @@
-// components/nodes/nodeManager.js
-import { BADGE_MAP, DEFAULT_PARAMS } from '../constants.js';
-import { connectionManager } from '../ConnectionManager.js';
+// components/nodes/NodeManager.js
+import { BADGE_MAP, DEFAULT_PARAMS } from '../Constants.js';
+import { ConnectionManager } from './ConnectionManager.js';
+import { ModelState } from "../ModelState.js";
+
+const connectionManager = new ConnectionManager();
+const modelState = new ModelState();
 
 let nodeIdCounter = 1;
 
@@ -56,6 +60,7 @@ export function spawnNode(type, x, y) {
 
     enableNodeDrag(node);
 
+    modelState.addNode({id, type, params, x, y});
     viewport.appendChild(node);
     connectionManager.attachSocketListeners(node);
     updateLayerCount();

@@ -21,3 +21,27 @@ export const DEFAULT_PARAMS= {
     "Softmax":     { dim: 1 },
     "Flatten":     {}
 }
+
+export const FRAMEWORK_REGISTRY = {
+    pytorch_2: {
+        id: "pytorch_2",
+        name: "PyTorch",
+        version: "2.x",
+        syntaxStyle: "nn.Module",
+        fileExtension: "py"
+    },
+    keras_3: {
+        id: "keras_3",
+        name: "Keras / TensorFlow",
+        version: "3.x",
+        syntaxStyle: "Functional",
+        fileExtension: "py"
+    },
+    onnx: {
+        id: "onnx",
+        name: "ONNX",
+        version: "1.0",
+        syntaxStyle: "Graph Spec",
+        fileExtension: "onnx"
+    }
+}

@@ -1,4 +1,7 @@
-// components/ConnectionManager.js
+import { ModelState } from "../ModelState.js";
+
+const modelState = new ModelState();
+
 export class ConnectionManager {
     constructor() {
         this.connections = [];
@@ -87,7 +90,7 @@ export class ConnectionManager {
             this.connections.push(connection);
             this.updateConnectionPath(connection);
         }
-
+        modelState.addEdge(sourceNode.id, targetNode.id);
         this.cancelConnection();
     }
 
@@ -152,6 +155,3 @@ export class ConnectionManager {
         this.cancelConnection();
     }
 }
-
-// Export a single shared instance
-export const connectionManager = new ConnectionManager();

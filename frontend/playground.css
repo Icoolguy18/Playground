@@ -782,10 +782,13 @@ body {
     overflow: auto;
     white-space: pre;
 }
+.code-bottom-ribbon{
+    padding-bottom: 5px;
+}
 
 .connection-path {
     fill: none;
-    stroke: var(--accent-color, #4f46e5);
+    stroke: var(--accent-color, #bcbcff);
     stroke-width: 2.5px;
     pointer-events: none; /* Let clicks pass through wires */
 }
