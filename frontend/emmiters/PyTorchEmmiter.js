@@ -2,6 +2,7 @@ import { TopologicalSort } from "../util/graphHelpers.js";
 
 export class PyTorchEmitter {
     static generate(graph){
+        console.debug(`Generating graph for graph ${graph.nodes}`);
         const sortedNodes = TopologicalSort(graph.nodes, graph.edges)
 
         let initLines = [];
@@ -9,6 +10,10 @@ export class PyTorchEmitter {
         let prevVar = "x";
 
         sortedNodes.forEach((node, index) => {
+            console.debug(`Running for each node, with node values 
+            idx: ${index}
+            nodeType: ${node.type}
+            `);
             if (node.type === "Input" ) return; // Input handled in the forward pass signature
 
             const layerName = `${node.type.toLowerCase()}_${index}`;
@@ -23,17 +28,18 @@ export class PyTorchEmitter {
 
         });
 
+        console.debug(`initlines ${initLines.length}`) // this returns 0
         return `import torch
-        from torch import nn
+from torch import nn
+    
+class ${graph.modelName}(nn.Module):
+    def __init__(self):
+        super().__init__()
+        ${initLines.join('\n')}
         
-        class ${graph.modelName}(nn.Module):
-            def __init__(self):
-                super().__init__();
-                ${initLines.join('\n')}
-                
-            def forward(self, x):
-                ${forwardLines.join("\n")}
-                return ${prevVar}
+    def forward(self, x):
+        ${forwardLines.join("\n")}
+        return ${prevVar}
         `;
     }
 }

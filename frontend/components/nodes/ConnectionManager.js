@@ -1,8 +1,7 @@
-import { ModelState } from "../ModelState.js";
+import { modelState } from "../ModelState.js";
 
-const modelState = new ModelState();
 
-export class ConnectionManager {
+export const connectionManager = new class ConnectionManager {
     constructor() {
         this.connections = [];
         this.isConnecting = false;

@@ -1,9 +1,8 @@
-import { ModelState } from "./ModelState.js";
+import { modelState } from "./ModelState.js";
 import { PyTorchEmitter } from "../emmiters/PyTorchEmmiter.js";
 
-const modelState = new ModelState();
 
-export class CodeDrawer {
+export const codeDrawer = new class CodeDrawer {
     constructor() {
         this.drawer = document.getElementById("codeDrawer");
         this.openBtn = document.getElementById("btnToggleCode");
@@ -60,6 +59,7 @@ export class CodeDrawer {
     refreshCode(){
         const graph = modelState.getGraph();
         const framework = graph.framework;
+        console.debug(framework.id)
 
         if(this.formatBadge){
             this.formatBadge.textContent = `${framework.name} ${framework.version}`;
@@ -67,11 +67,13 @@ export class CodeDrawer {
 
         let generatedCode = "";
         if (framework.id === "pytorch_2") {
+            console.debug("generating for framework PyTorch")
             generatedCode = PyTorchEmitter.generate(graph);
+            console.debug(generatedCode)
         }
         else {
-            generatedCode = `Emitter not implemented for framework ${framework.name}`
-            console.warn("NO EMITTER FOUND FOR THE SELECTED FRAMEWORK")
+            generatedCode = `Emitter not implemented for framework ${framework.id}`
+            console.warn(`Emitter not implemented for framework ${framework.id}`)
         }
         this.codeOutput.textContent = generatedCode;
 

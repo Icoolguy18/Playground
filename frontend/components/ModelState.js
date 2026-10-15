@@ -1,6 +1,6 @@
 import {FRAMEWORK_REGISTRY} from "./Constants.js";
 
-export class ModelState{
+export const modelState = new class ModelState{
     constructor() {
         this.modelName = "CustomModel";
         this.framework = FRAMEWORK_REGISTRY.pytorch_2;
@@ -39,7 +39,13 @@ export class ModelState{
     }
 
     getGraph(){
+        console.debug(`
+            modelName:${this.modelName}
+            framework:${this.framework.id}
+            nodes:${Array.from(this.nodes.values())}
+            `)
         return{
+
             modelName: this.modelName,
             framework: this.framework,
             nodes: Array.from(this.nodes.values()),

@@ -1,14 +1,11 @@
 // main.js
-import { CodeDrawer } from './components/CodeDrawer.js';
+import { codeDrawer } from './components/CodeDrawer.js';
 import { initDragAndDrop } from './components/LayerDragAndDrop.js';
 import { spawnNode, clearWorkspace } from './components/nodes/nodeManager.js';
-import { ModelState } from "./components/ModelState.js";
+import { modelState } from "./components/ModelState.js";
 
 console.log("main.js is running");
-
-const modelState = new ModelState();
 console.debug("Loaded Model State");
-const codeDrawer = new CodeDrawer();
 console.debug("Loaded code drawer");
 
 const togglePaletteBtn = document.getElementById("btnTogglePalette");
