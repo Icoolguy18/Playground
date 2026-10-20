@@ -30,7 +30,7 @@ export const modelState = new class ModelState{
     }
 
     removeNode(nodeId){
-        this.nodes.delete(this.nodeId);
+        this.nodes.delete(nodeId);
         this.edges = this.edges.filter(e => e.fromNodeId !== nodeId && e.toNodeId !== nodeId);
     }
 

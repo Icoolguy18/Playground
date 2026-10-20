@@ -41,3 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 })
+
+window.addEventListener("modelGraphUpdated", () => {
+    if (!codeDrawer.drawer.classList.contains("hidden")) {
+        codeDrawer.refreshCode();
+    }
+});

@@ -17,10 +17,10 @@ export function spawnNode(type, x, y) {
     const shortCode = type.substring(0, 2).toUpperCase();
     const params = DEFAULT_PARAMS[type] || {};
 
-    const paramRows = Object.entries(params).map(([key, val] ) => `
+    const paramRows = Object.entries(params).map(([key, val]) => `
         <div class="node-param-row">
             <span class="node-param-label">${key}</span>
-            <span class="node-param-val">${val}</span>
+            <input type="text" class="node-param-input" data-param="${key}" value="${val}">
         </div>
     `).join("") || `
         <div class="node-param-row">
@@ -51,9 +51,30 @@ export function spawnNode(type, x, y) {
     node.querySelector(".node-delete-btn").addEventListener("click", (e) => {
         e.stopPropagation();
         connectionManager.removeNodeConnections(node);
+        modelState.removeNode(id);
         node.remove();
         updateLayerCount();
+        window.dispatchEvent(new CustomEvent("modelGraphUpdated"));
     });
+
+    node.querySelectorAll(".node-param-input").forEach(input => {
+        input.addEventListener("mousedown", (e) => e.stopPropagation());
+        input.addEventListener("click", (e) => e.stopPropagation());
+
+        input.addEventListener("input", (e) => {
+            const paramKey = e.target.getAttribute("data-param");
+            const newValue = e.target.value;
+
+            const nodeData = modelState.nodes.get(id);
+            if (nodeData) {
+                nodeData.params[paramKey] = newValue;
+
+                window.dispatchEvent(new CustomEvent("modelGraphUpdated"));
+            }
+        });
+    });
+
+    modelState.addNode({id, type, params, x, y})
 
     enableNodeDrag(node);
     console.debug(`Added Node to modelState with values ${id}, ${type}, ${params}, ${x}, ${y}`)
@@ -61,6 +82,7 @@ export function spawnNode(type, x, y) {
     viewport.appendChild(node);
     connectionManager.attachSocketListeners(node);
     updateLayerCount();
+    window.dispatchEvent(new CustomEvent("modelGraphUpdated"));
 }
 
 function enableNodeDrag(node) {
