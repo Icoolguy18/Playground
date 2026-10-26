@@ -1,5 +1,6 @@
 import { modelState } from "./ModelState.js";
 import { PyTorchEmitter } from "../emmiters/PyTorchEmmiter.js";
+import { KerasEmitter } from "../emmiters/kerasEmmiter.js";
 
 
 export const codeDrawer = new class CodeDrawer {
@@ -69,6 +70,11 @@ export const codeDrawer = new class CodeDrawer {
         if (framework.id === "pytorch_2") {
             console.debug("generating for framework PyTorch")
             generatedCode = PyTorchEmitter.generate(graph);
+            console.debug(generatedCode)
+        }
+        else if(framework.id === "keras_3") {
+            console.debug("generating for keras_3");
+            generatedCode = KerasEmitter.generate(graph);
             console.debug(generatedCode)
         }
         else {

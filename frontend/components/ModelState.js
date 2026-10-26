@@ -1,4 +1,4 @@
-import {FRAMEWORK_REGISTRY} from "./Constants.js";
+import { FRAMEWORK_REGISTRY } from "./Constants.js";
 
 export const modelState = new class ModelState{
     constructor() {
