@@ -89,6 +89,7 @@ export const connectionManager = new class ConnectionManager {
             this.connections.push(connection);
             this.updateConnectionPath(connection);
         }
+        console.log(`established connection between nodes ${sourceNode.id} to  ${targetNode.id}, should call the method addEdge`);
         modelState.addEdge(sourceNode.id, targetNode.id);
         this.cancelConnection();
     }

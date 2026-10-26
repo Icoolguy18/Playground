@@ -17,6 +17,10 @@ export function spawnNode(type, x, y) {
     const shortCode = type.substring(0, 2).toUpperCase();
     const params = DEFAULT_PARAMS[type] || {};
 
+    /*
+     * TODO: The input params work and update in real time, but is buggy and spills as the target layer is obtained
+     *       by node / layer type and thus affects all the corresponding Nodes of the type
+     */
     const paramRows = Object.entries(params).map(([key, val]) => `
         <div class="node-param-row">
             <span class="node-param-label">${key}</span>

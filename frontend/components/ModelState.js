@@ -24,7 +24,14 @@ export const modelState = new class ModelState{
 
     addEdge(fromNodeId, toNodeId){
         const exists = this.edges.filter(e => e.fromNodeId === fromNodeId && e.toNodeId === toNodeId);
-        if (!exists) {
+        console.log(`Logged exists, should return "adding edge ..."`)
+        /*
+         * TODO: In js the array() is always truthy and does not matter with the Contents. Even if the array = []
+         *       is empty it would always return true. Change the return of exists from type(array) to Object
+         */
+        console.log(exists.length);
+        if (exists.length === 0) {
+            console.log(`Adding edge in the graph for nodes ${fromNodeId} with  ${toNodeId}`);
             this.edges.push({fromNodeId, toNodeId});
         }
     }

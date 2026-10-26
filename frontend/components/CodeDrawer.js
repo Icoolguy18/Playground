@@ -53,6 +53,7 @@ export const codeDrawer = new class CodeDrawer {
            });
         });
         this.refreshBtn.addEventListener("click", () =>{
+            console.log("==========    Refreshed Code    ==========")
             this.refreshCode()
         });
     }
