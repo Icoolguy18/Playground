@@ -1,42 +1,42 @@
-export function TopologicalSort(nodes, edges){
-    const adjList = new Map();
+export function TopologicalSort(nodes, edges) {
+    const adjacency = new Map();
     const inDegree = new Map();
 
-    nodes.forEach((node)=>{
-        adjList.set(node.id, []);
+    nodes.forEach(node => {
+        adjacency.set(node.id, []);
         inDegree.set(node.id, 0);
     });
 
-    edges.forEach((edge)=>{
-        if (adjList.has(edge.fromNodeId)){
-            adjList.get(edge.fromNodeId).push(edge.toNodeId);
+    edges.forEach(({ fromNodeId, toNodeId }) => {
+        if (adjacency.has(fromNodeId)) {
+            adjacency.get(fromNodeId).push(toNodeId);
         }
-        if (inDegree.has(edge.fromNodeId)){
-            inDegree.set(edge.fromNodeId, inDegree.get(edge.fromNodeId) + 1);
+
+        // The destination receives the incoming edge.
+        if (inDegree.has(toNodeId)) {
+            inDegree.set(toNodeId, inDegree.get(toNodeId) + 1);
         }
     });
 
     const queue = [];
-    inDegree.forEach((degree, nodeId)=>{
-        if (degree === 0) {
-            queue.push(nodeId);
-        }
+    inDegree.forEach((degree, id) => {
+        if (degree === 0) queue.push(id);
     });
 
-    const sortedNodeIds = [];
+    const sortedIds = [];
     while (queue.length > 0) {
-        const currId = queue.shift();
-        sortedNodeIds.push(currId);
+        const id = queue.shift();
+        sortedIds.push(id);
 
-        const neighbours = adjList.get(currId);
-        neighbours.forEach( neighbourId => {
+        adjacency.get(id).forEach(neighbourId => {
             inDegree.set(neighbourId, inDegree.get(neighbourId) - 1);
-            if (inDegree.get(neighbourId) === 0){
+
+            if (inDegree.get(neighbourId) === 0) {
                 queue.push(neighbourId);
             }
         });
     }
 
-    const nodeMap = new Map(nodes.map(n => [n.id, n]));
-    return sortedNodeIds.map(id => nodeMap.get(id)).filter(Boolean);
+    const nodeMap = new Map(nodes.map(node => [node.id, node]));
+    return sortedIds.map(id => nodeMap.get(id)).filter(Boolean);
 }

@@ -23,7 +23,7 @@ export class PyTorchEmitter {
 
             initLines.push(`self.${layerName} = nn.${node.type}(${paramString})`);
             const nextVar = `out_${index}`;
-            forwardLines.push(`${nextVar} = self.${layerName}(${prevVar})`);
+            forwardLines.push(`        ${nextVar} = self.${layerName}(${prevVar})`);
             prevVar = nextVar;
 
         });
@@ -35,10 +35,10 @@ from torch import nn
 class ${graph.modelName}(nn.Module):
     def __init__(self):
         super().__init__()
-        ${initLines.join('\n')}
+${initLines.map(line => `    ${line}`).join('\n')}
         
     def forward(self, x):
-        ${forwardLines.join("\n")}
+${forwardLines.map(line => `    ${line}`).join("\n")}
         return ${prevVar}
         `;
     }
