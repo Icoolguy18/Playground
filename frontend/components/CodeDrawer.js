@@ -20,8 +20,10 @@ export const codeDrawer = new class CodeDrawer {
     }
 
     initListeners() {
-        this.openBtn.addEventListener("click", () =>
-            this.drawer.classList.remove("hidden"))
+        this.openBtn.addEventListener("click", () => {
+            this.refreshCode();
+            this.drawer.classList.remove("hidden");
+        });
             console.debug("Opening code drawer");
         this.closeBtn.addEventListener("click", () =>
             this.drawer.classList.add("hidden"));

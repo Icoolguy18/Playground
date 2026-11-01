@@ -12,8 +12,8 @@ export const BADGE_MAP = {
 
 export const DEFAULT_PARAMS= {
     "Input":       { shape: "(3, 224, 224)" },
-    "Conv2d":      { in_channels: 3,   out_channels: 32, kernel: 3 },
-    "MaxPool2d":   { kernel: 2, stride: 2 },
+    "Conv2d":      { in_channels: 3,   out_channels: 32, kernel_size: 3 },
+    "MaxPool2d":   { kernel_size: 2, stride: 2 },
     "Linear":      { in_features: 512, out_features: 10 },
     "Dropout":     { p: 0.5 },
     "BatchNorm2d": { num_features: 32 },
