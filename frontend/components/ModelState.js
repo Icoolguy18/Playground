@@ -1,62 +1,66 @@
-import { FRAMEWORK_REGISTRY } from "./Constants.js";
+import { FRAMEWORK_REGISTRY } from './Constants.js';
 
-export const modelState = new class ModelState{
+/** The single graph shared by canvas, inspector, analysis, and code emitters. */
+export class ModelState {
     constructor() {
-        this.modelName = "CustomModel";
+        this.modelName = 'CustomModel';
         this.framework = FRAMEWORK_REGISTRY.pytorch_2;
-        this.nodes = new Map(); //Key: nodeId, Value: { id, type, params, x, y }
+        this.nodes = new Map();
         this.edges = [];
     }
 
-    setModelName(name){
-        this.modelName = name;
+    changed() {
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('modelGraphUpdated'));
     }
 
-    setFramework(frameworkKey){
-        if (FRAMEWORK_REGISTRY[frameworkKey]) {
-            this.framework = FRAMEWORK_REGISTRY[frameworkKey];
+    setModelName(name) { this.modelName = name || 'CustomModel'; this.changed(); }
+    setFramework(key) {
+        if (FRAMEWORK_REGISTRY[key]) { this.framework = FRAMEWORK_REGISTRY[key]; this.changed(); }
+    }
+    addNode(node) { this.nodes.set(node.id, node); this.changed(); }
+    updateParam(id, key, value) {
+        const node = this.nodes.get(id);
+        if (!node || !Object.hasOwn(node.params, key)) return;
+        node.params[key] = value;
+        this.changed();
+    }
+    updatePosition(id, x, y) {
+        const node = this.nodes.get(id);
+        if (node) Object.assign(node, { x, y });
+    }
+
+    validateEdge(from, to) {
+        if (!this.nodes.has(from) || !this.nodes.has(to)) return 'Both operators must exist.';
+        if (from === to) return 'An operator cannot connect to itself.';
+        if (this.nodes.get(to).type === 'Input') return 'An input tensor cannot receive an upstream connection.';
+        if (this.edges.some(e => e.fromNodeId === from && e.toNodeId === to)) return 'These operators are already connected.';
+        if (this.edges.some(e => e.toNodeId === to)) return 'This operator accepts one input. Remove its existing connection first.';
+        const pending = [to], visited = new Set();
+        while (pending.length) {
+            const id = pending.pop();
+            if (id === from) return 'This connection would create a cycle.';
+            if (visited.has(id)) continue;
+            visited.add(id);
+            this.edges.filter(e => e.fromNodeId === id).forEach(e => pending.push(e.toNodeId));
         }
+        return '';
     }
-
-    addNode(nodeData){
-        this.nodes.set(nodeData.id, nodeData);
+    addEdge(fromNodeId, toNodeId) {
+        const error = this.validateEdge(fromNodeId, toNodeId);
+        if (error) throw new Error(error);
+        this.edges.push({ fromNodeId, toNodeId });
+        this.changed();
     }
-
-    addEdge(fromNodeId, toNodeId){
-        const exists = this.edges.filter(e => e.fromNodeId === fromNodeId && e.toNodeId === toNodeId);
-        console.log(`Logged exists, should return "adding edge ..."`)
-        /*
-         * TODO: In js the array() is always truthy and does not matter with the Contents. Even if the array = []
-         *       is empty it would always return true. Change the return of exists from type(array) to Object
-         */
-        console.log(exists.length);
-        if (exists.length === 0) {
-            console.log(`Adding edge in the graph for nodes ${fromNodeId} with  ${toNodeId}`);
-            this.edges.push({fromNodeId, toNodeId});
-        }
+    removeEdge(from, to) {
+        this.edges = this.edges.filter(e => e.fromNodeId !== from || e.toNodeId !== to);
+        this.changed();
     }
-
-    removeNode(nodeId){
-        this.nodes.delete(nodeId);
-        this.edges = this.edges.filter(e => e.fromNodeId !== nodeId && e.toNodeId !== nodeId);
+    removeNode(id) {
+        this.nodes.delete(id);
+        this.edges = this.edges.filter(e => e.fromNodeId !== id && e.toNodeId !== id);
+        this.changed();
     }
-
-    removeEdge(fromNodeId, toNodeId){
-        this.edges = this.edges.filter(e => e.fromNodeId !== fromNodeId && e.toNodeId !== toNodeId)
-    }
-
-    getGraph(){
-        console.debug(`
-            modelName:${this.modelName}
-            framework:${this.framework.id}
-            nodes:${Array.from(this.nodes.values())}
-            `)
-        return{
-
-            modelName: this.modelName,
-            framework: this.framework,
-            nodes: Array.from(this.nodes.values()),
-            edges: this.edges,
-        }
-    }
+    clear() { this.nodes.clear(); this.edges = []; this.changed(); }
+    getGraph() { return { modelName: this.modelName, framework: this.framework, nodes: [...this.nodes.values()], edges: this.edges }; }
 }
+export const modelState = new ModelState();

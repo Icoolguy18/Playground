@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" data-theme="neuralpaper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural Playground — Paper / clay</title>
+<link rel="stylesheet" href="reference.css">
+<link rel="stylesheet" href="node-groups.css">
+<script src="node-groups.js" defer></script>
+<script src="reference.js" defer>
+</script>
+<script src="inspector.js" defer></script>
+</head>
+<body>
+<nav aria-label="Design options">
+<span class="eyebrow">WORKSPACE APPEARANCE</span>
+<div id="themes">
+<button data-theme="paper">Paper / clay</button>
+<button data-theme="gallery">Slate / blue</button>
+<button data-theme="notebook">Notebook / ochre</button>
+<button data-theme="sage">Drafting / sage</button>
+<button data-theme="tensorflow">Neural playground</button>
+<button data-theme="neuralpaper">Neural / paper clay</button>
+</div>
+<span class="eyebrow">RESEARCH EDITION · DESIGN PREVIEW</span>
+</nav>
+<header>
+<a href="reference.html">▱ &nbsp; Model Playground <small>RESEARCH</small>
+</a>
+<label class="document">
+<span class="dot">
+</span>
+<input aria-label="Model name" value="Spatial encoder — baseline">
+</label>
+<button id="summary" class="primary">Architecture summary ↗</button>
+</header>
+<main>
+<aside class="palette">
+<h2>Component browser</h2>
+<div class="pane-tabs" role="tablist" aria-label="Component categories"><button id="browser-layers" role="tab" aria-selected="true" aria-controls="library-layers" data-library="layers">Layers</button><button id="browser-training" role="tab" aria-selected="false" aria-controls="library-training" data-library="training" tabindex="-1">Training</button><button id="browser-custom" role="tab" aria-selected="false" aria-controls="library-custom" data-library="custom" tabindex="-1">My library</button></div>
+<section id="library-layers" role="tabpanel" aria-labelledby="browser-layers">
+<p>Search operators. Click to add to the graph.</p>
+<input id="search" type="search" aria-label="Find a layer" placeholder="⌕  Find a layer">
+<div id="layers">
+</div>
+</section>
+<section id="library-training" role="tabpanel" aria-labelledby="browser-training" hidden><span class="eyebrow">TRAINING CONFIGURATION</span><h3>Optimizers &amp; losses</h3><p>Configure how the model learns, separately from the architecture graph.</p><div class="planned-resource" data-preview-kind="optimizer"><span class="resource-label">OPTIMIZER · OP</span><strong>Optimizer</strong><p>Planned · Adam, AdamW, SGD and custom implementations.</p></div><div class="planned-resource" data-preview-kind="loss"><span class="resource-label">LOSS · LS</span><strong>Loss function</strong><p>Planned · built-in objectives and custom implementations.</p></div><p class="scope-note">These choices are reserved for a future implementation. No training is configured or executed in this preview.</p></section>
+<section id="library-custom" role="tabpanel" aria-labelledby="browser-custom" hidden><span class="eyebrow">PERSONAL FUNCTION LIBRARY</span><h3>No custom functions yet</h3><p>A dedicated place for reusable layers, activations, optimizers and losses. Custom functions inherit their role’s color; untyped functions use lavender.</p><p class="scope-note">Storage, registration and execution will be added later. Each entry should carry its signature, parameters, framework compatibility and version.</p></section>
+<footer>
+<strong>Start with a connection.</strong>
+<p>Drag from an output dot to an input dot. Select a layer to inspect it.</p>
+</footer>
+</aside>
+<section class="canvas">
+<div class="intro">
+<span class="eyebrow">ARCHITECTURE / 001</span>
+<h1 id="title">
+</h1>
+<p id="description">
+</p>
+</div>
+<div class="research-context"><span class="context-label">MODEL SPECIFICATION</span><span>Image encoder</span><span>Channel-first · C × H × W</span><span class="preview-badge">Local prototype</span></div>
+<div class="model-metrics" aria-live="polite"><div><span>Operators</span><strong id="metricNodes">5</strong></div><div><span>Known parameters</span><strong id="metricParams">896</strong></div><div><span>Terminal tensor</span><strong id="metricShape">401,408</strong></div><div><span>Shape inference</span><strong id="metricValidation">Derived</strong></div></div>
+<div id="nodeLegend" class="node-legend" aria-label="Node color key"></div>
+<div class="playground-controls">
+    <label>Input tensor<input id="playgroundInput" aria-label="Input tensor dimensions" value="3 × 224 × 224"></label>
+    <label>Connections<select id="playgroundRouting"><option value="curve">Curved</option><option value="elbow">Orthogonal</option></select></label>
+    <div class="playground-action"><span>Architecture</span><button id="arrangeFlow">Arrange left to right →</button></div>
+    <p>Architecture preview<br><strong>Training not connected</strong></p>
+</div>
+<div class="playground-flow" aria-label="Architecture reading order"><span>01 / Input tensor</span><span>02 / Feature extraction &amp; transformations</span><span>03 / Output tensor</span></div>
+<div class="scroll">
+<div id="graph">
+<svg id="wires" aria-label="Layer connections">
+</svg>
+<div id="nodes">
+</div>
+</div>
+</div>
+<div class="bottom">
+<span id="status">
+</span>
+<div>
+<button id="reset">↺ Reset example</button>
+<button id="routing">Curved lines</button>
+</div>
+</div>
+</section>
+<aside class="inspector">
+<div class="inspector-heading"><div><span class="eyebrow">SELECTED OPERATOR</span><h2 id="inspectorSelection">Conv2d</h2></div><button id="toggleInspector" aria-expanded="true" aria-controls="inspectorBody" aria-label="Collapse inspector">−</button></div>
+<span id="inspectorKind" class="inspector-kind"></span>
+<div id="inspectorBody"><div class="pane-tabs" role="tablist" aria-label="Operator information"><button id="tab-settings" role="tab" aria-selected="true" aria-controls="panel-settings" data-inspector="settings">Settings</button><button id="tab-details" role="tab" aria-selected="false" aria-controls="panel-details" data-inspector="details" tabindex="-1">Details</button></div>
+<section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings">
+<div id="details">
+</div>
+</section>
+<section id="panel-details" role="tabpanel" aria-labelledby="tab-details" hidden>
+<section class="tensor-inspection" aria-live="polite"><h3>Tensor contract</h3><dl id="tensorContract"></dl><p id="inferenceNote"></p></section>
+<div class="connections">
+<h3>Connections</h3>
+<div id="links">
+</div>
+<p>Focus a line and press Delete to remove it.</p>
+</div>
+<details class="definition-section"><summary>Operator definition · JSON</summary><pre id="selectedDefinition"></pre></details></section>
+<p class="scope-note">Parameter edits apply to this local preview immediately.</p>
+<footer>
+<span class="eyebrow">WORKSPACE NOTES</span>
+<p id="note">
+</p>
+</footer>
+</div>
+</aside>
+</main>
+<dialog>
+<h2>Architecture summary</h2>
+<p>Local architecture specification · editable operator parameters and directed edges.</p>
+<pre>
+</pre>
+<button id="close">Close</button>
+</dialog>
+</body>
+</html>

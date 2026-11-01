@@ -1,193 +1,97 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Model Playground — Neural / paper clay</title>
     <link rel="stylesheet" href="playground.css">
-    <title>Model Playground</title>
+    <script type="module" src="main.js"></script>
 </head>
 <body>
-<div class="playground-backdrop"></div>
-<div class="playground-container">
-    <header class="header-bar">
-        <div class="brand-section">
-            <!-- Toggle Layer Palette Button -->
-            <button id="btnTogglePalette" class="tool-btn" title="Toggle Layer Palette">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="9" y1="3" x2="9" y2="21"></line>
-                </svg>
-            </button>
-
-            <div class="brand-logo" title="Model Playground">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                    <polyline points="2 17 12 22 22 17"></polyline>
-                    <polyline points="2 12 12 17 22 12"></polyline>
-                </svg>
+    <div class="playground-container">
+        <header class="header-bar">
+            <div class="brand-section">
+                <button id="btnTogglePalette" class="icon-button" aria-label="Toggle component browser" aria-expanded="true" aria-controls="layerPalette">☷</button>
+                <a class="brand" href="playground.html"><span aria-hidden="true">▱</span> Model Playground <small>RESEARCH</small></a>
             </div>
-            <span class="brand-title">Model Playground</span>
-        </div>
-
-        <!-- Center Controls / Model Identifier -->
-        <div class="model-controls">
-            <input type="text" id="modelNameInput" class="model-name-input" value="customModel" title="Model Name">
-            <select id="frameworkSelector" class="dropdown-select" title="Target Framework & Version">
-                <option value="pytorch_2">PyTorch 2.x (nn.Module)</option>
-                <option value="keras_3">Keras 3 / TensorFlow (Functional)</option>
-                <option value="onnx">ONNX Graph Spec</option>
-            </select>
-            <!-- Dynamic Model Layer Counter -->
-            <span class="brand-badge" id="modelLayerCount">0 Layers</span>
-        </div>
-
-        <div class="header-actions">
-            <button id="btnToggleCode" class="btn-moon btn-moon-primary">View Code</button>
-            <button id="btnClear" class="btn-moon" title="Reset workspace">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-                Clear
-            </button>
-        </div>
-    </header>
-
-    <!-- MAIN BODY WORKSPACE -->
-    <main class="workspace-grid">
-
-        <!-- COMPONENT A: LAYER SELECTION PALETTE -->
-        <aside class="panel-sidebar" id="layerPalette">
-            <div class="panel-header">
-                <span class="panel-title">Layer Palette</span>
-            </div>
-
-            <div class="search-box">
-                <input type="text" id="layerSearch" class="search-input" placeholder="Search layers..." autocomplete="off">
-            </div>
-
-            <div class="palette-scroll" id="paletteList">
-                <!-- 1. Input & Reshaping -->
-                <div class="category-group">
-                    <div class="category-title">Input & Reshaping</div>
-                    <div class="layer-card" draggable="true" data-type="Input">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-input">IN</span>
-                            <span class="layer-name">Input Tensor</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
+            <label class="model-name"><span class="session-dot" aria-hidden="true"></span><span class="sr-only">Model name</span><input id="modelNameInput" value="CustomModel" spellcheck="false" autocomplete="off"></label>
+            <div class="header-actions"><button id="btnClear" class="header-secondary">Clear graph</button><button id="btnToggleCode" class="primary">View code ↗</button></div>
+        </header>
+        <main class="workspace-grid" id="workspace">
+            <aside class="panel-sidebar" id="layerPalette" aria-label="Component browser">
+                <div class="panel-heading"><h2>Component browser</h2><button id="btnClosePalette" class="icon-button" aria-label="Collapse component browser" aria-controls="layerPalette">‹</button></div>
+                <div class="pane-tabs" role="tablist" aria-label="Component categories">
+                    <button id="libraryTab-layers" role="tab" aria-selected="true" aria-controls="library-layers" data-library-tab="layers">Layers</button>
+                    <button id="libraryTab-training" role="tab" aria-selected="false" aria-controls="library-training" data-library-tab="training" tabindex="-1">Training</button>
+                    <button id="libraryTab-custom" role="tab" aria-selected="false" aria-controls="library-custom" data-library-tab="custom" tabindex="-1">My library</button>
+                </div>
+                <section id="library-layers" role="tabpanel" aria-labelledby="libraryTab-layers">
+                    <p class="supporting">Click to add, or drag onto the canvas.</p>
+                    <label class="search-box"><span aria-hidden="true">⌕</span><input id="layerSearch" type="search" placeholder="Find an operator" aria-label="Find an operator"><kbd>/</kbd></label>
+                    <div id="paletteList" class="palette-scroll"></div>
+                    <p id="noSearchResults" class="empty-result" hidden>No operators match your search. Try a type such as Conv2d or ReLU.</p>
+                </section>
+                <section id="library-training" role="tabpanel" aria-labelledby="libraryTab-training" hidden>
+                    <span class="eyebrow">TRAINING CONFIGURATION</span><h3>How the model learns</h3><p>Optimizers and losses will be configured alongside the architecture.</p>
+                    <div class="planned-resource" data-role-kind="optimizer"><span class="role-label">OP · Optimizer</span><strong>Adam · AdamW · SGD</strong><p>Planned · update rules and their parameters.</p></div>
+                    <div class="planned-resource" data-role-kind="loss"><span class="role-label">LS · Loss</span><strong>Cross entropy · MSE</strong><p>Planned · objectives and target contracts.</p></div>
+                    <p class="supporting">Training is not configured or executed in this version.</p>
+                </section>
+                <section id="library-custom" role="tabpanel" aria-labelledby="libraryTab-custom" hidden>
+                    <span class="eyebrow">PERSONAL FUNCTION LIBRARY</span><h3>No custom functions yet</h3><p>A future home for reusable layers, activations, optimizers and losses.</p><p class="supporting">Saved functions will inherit their role’s color and carry a signature, parameters, version and framework compatibility.</p>
+                </section>
+                <div class="browser-help"><strong>Connect the architecture.</strong><p>Drag between sockets, or choose an output and then an input. Escape cancels.</p></div>
+            </aside>
+            <section class="model-workspace" aria-label="Model architecture">
+                <div class="workspace-heading"><div><span class="eyebrow">NEURAL / PAPER CLAY</span><h1>Architecture workspace</h1><p>Trace tensor flow. Select an operator to refine its configuration.</p></div><span class="session-badge">Local session</span></div>
+                <div class="model-metrics" aria-live="polite" aria-atomic="true">
+                    <div><span>Operators</span><strong id="modelLayerCount">0</strong></div>
+                    <div><span>Known parameters</span><strong id="metricParams">—</strong></div>
+                    <div><span>Terminal tensor</span><strong id="metricShape">—</strong></div>
+                    <div><span>Shape inference</span><strong id="metricValidation">Empty</strong></div>
+                </div>
+                <div class="workspace-controls">
+                    <div class="view-controls" role="group" aria-label="Workspace panels">
+                        <button id="btnCanvasPalette" aria-controls="layerPalette" aria-expanded="true">Components</button>
+                        <button id="btnCanvasInspector" aria-controls="operatorInspector" aria-expanded="true">Inspector</button>
+                        <button id="btnCanvasFocus" aria-pressed="false">Canvas focus</button>
                     </div>
-                    <div class="layer-card" draggable="true" data-type="Flatten">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-linear">FL</span>
-                            <span class="layer-name">Flatten</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
+                    <button id="btnAutoLayout">Arrange →</button>
+                    <div class="zoom-controls" role="group" aria-label="Canvas view"><button id="btnZoomOut" aria-label="Zoom out">−</button><output id="zoomLevel" aria-live="polite">100%</output><button id="btnZoomIn" aria-label="Zoom in">+</button><button id="btnResetView">Fit</button></div>
+                </div>
+                <details class="workspace-options" id="workspaceOptions"><summary>Model options &amp; color key</summary>
+                    <div class="option-fields"><label>Target framework<select id="frameworkSelector"><option value="pytorch_2">PyTorch 2.x</option><option value="keras_3">Keras / TensorFlow</option><option value="onnx" disabled>ONNX · planned</option></select></label><label>Connections<select id="connectionRouting"><option value="curve">Curved</option><option value="elbow">Orthogonal</option></select></label></div>
+                    <div id="nodeLegend" class="node-legend" aria-label="Node role legend"></div>
+                </details>
+                <section id="canvasContainer" class="canvas-container" aria-label="Architecture canvas" tabindex="0">
+                    <div id="graphSpace" class="graph-space"><div id="graphStage" class="graph-stage"><svg id="svgConnectionsLayer" class="connections-layer" aria-label="Tensor connections"></svg><div id="graphViewport" class="graph-viewport" data-scale="1"></div></div></div>
+                    <div id="canvasEmpty" class="canvas-empty"><span class="empty-graph-mark" aria-hidden="true">□ ─ □ ─ □</span><h2>Start with an input tensor.</h2><p>Add an operator from the browser, or explore a connected example.</p><button id="btnLoadExample">Load encoder example →</button></div>
+                </section>
+                <footer class="workspace-footer"><span id="graphStatus">0 operators · 0 connections</span><span>Channel-first · batch omitted</span></footer>
+                <p id="workspaceNotice" class="workspace-notice" role="status" aria-live="polite">Changes are kept for this session. Export code before leaving.</p>
+            </section>
+            <aside class="inspector" id="operatorInspector" aria-label="Operator inspector">
+                <div class="inspector-heading"><div><span class="eyebrow">OPERATOR INSPECTOR</span><h2 id="inspectorSelection">No selection</h2></div><button id="toggleInspector" class="icon-button" aria-label="Collapse inspector" aria-expanded="true" aria-controls="operatorInspector">›</button></div>
+                <div id="inspectorContent">
+                    <div id="inspectorEmpty" class="inspector-empty"><p>Select an operator to edit its parameters and inspect its tensor contract.</p></div>
+                    <div id="inspectorSelected" hidden>
+                        <span id="inspectorKind" class="role-badge"></span>
+                        <div id="shapeDiagnostic" class="shape-diagnostic" hidden><strong id="shapeDiagnosticTitle"></strong><dl id="shapeComparison"></dl><p id="shapeDiagnosticMessage"></p></div>
+                        <div class="pane-tabs" role="tablist" aria-label="Operator information"><button id="inspectorTab-settings" role="tab" aria-selected="true" aria-controls="inspector-settings" data-inspector-tab="settings">Settings</button><button id="inspectorTab-details" role="tab" aria-selected="false" aria-controls="inspector-details" data-inspector-tab="details" tabindex="-1">Details</button></div>
+                        <section id="inspector-settings" role="tabpanel" aria-labelledby="inspectorTab-settings"><p id="operatorDescription"></p><h3>Parameters</h3><form id="operatorParameters" autocomplete="off"></form><section class="parameter-calculation" aria-label="Parameter calculation"><h3>Parameter calculation</h3><dl id="parameterBreakdown"></dl><p id="parameterFormula" class="parameter-formula"></p><p id="parameterAssumption" class="supporting"></p></section><p class="supporting">You can continue configuring weights while resolving a shape mismatch. Export requires a compatible graph.</p><button id="btnRemoveSelected" class="danger-button">Remove operator</button></section>
+                        <section id="inspector-details" role="tabpanel" aria-labelledby="inspectorTab-details" hidden><h3>Tensor contract</h3><dl id="tensorContract"></dl><p id="inferenceNote" class="supporting"></p><h3>Connections</h3><div id="selectedConnections"></div><details class="definition-section"><summary>Operator definition · JSON</summary><pre id="selectedDefinition"></pre></details></section>
                     </div>
                 </div>
-
-                <!-- 2. Convolutional -->
-                <div class="category-group">
-                    <div class="category-title">Convolutional</div>
-                    <div class="layer-card" draggable="true" data-type="Conv2d">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-conv">C2</span>
-                            <span class="layer-name">Conv2d</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="MaxPool2d">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-conv">MP</span>
-                            <span class="layer-name">MaxPool2d</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
-
-                <!-- 3. Linear & Normalization -->
-                <div class="category-group">
-                    <div class="category-title">Linear & Normalization</div>
-                    <div class="layer-card" draggable="true" data-type="Linear">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-linear">FC</span>
-                            <span class="layer-name">Linear (Dense)</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="Dropout">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-linear">DO</span>
-                            <span class="layer-name">Dropout</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="BatchNorm2d">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-norm">BN</span>
-                            <span class="layer-name">BatchNorm2d</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
-
-                <!-- 4. Activations -->
-                <div class="category-group">
-                    <div class="category-title">Activations</div>
-                    <div class="layer-card" draggable="true" data-type="ReLU">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-activation">RL</span>
-                            <span class="layer-name">ReLU</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="Softmax">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-activation">SM</span>
-                            <span class="layer-name">Softmax</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
-            </div>
-        </aside>
-
-        <!-- COMPONENT B: DISPLAY & CONNECTIONS CANVAS -->
-        <section class="canvas-container" id="canvasContainer">
-            <div class="canvas-toolbar">
-                <button class="tool-btn" id="btnZoomIn" title="Zoom In">+</button>
-                <button class="tool-btn" id="btnZoomOut" title="Zoom Out">−</button>
-                <button class="tool-btn" id="btnResetView" title="Reset View">⊙</button>
-                <span style="width: 1px; height: 16px; background: var(--border-moon-medium); margin: 0 4px;"></span>
-                <button class="tool-btn" id="btnAutoLayout" title="Auto Align">⌥</button>
-            </div>
-
-            <svg class="connections-layer" id="svgConnectionsLayer"></svg>
-            <div class="graph-viewport" id="graphViewport"></div>
-        </section>
-    </main>
-
-    <!-- CODE DRAWER -->
-    <aside id="codeDrawer" class="code-drawer hidden">
-        <div class="code-drawer-header">
-            <div class="code-drawer-title">
-                <span>Model Code</span>
-                <span class="brand-badge" id="codeFormatBadge">{PyTorch 2.x}</span>
-            </div>
-            <div class="drawer-actions">
-                <button id="btnCloseDrawer" class="tool-btn" title="Close Drawer">✕</button>
-            </div>
-        </div>
-        <pre class="code-editor-area" id="codeOutput"><code># Generated code will appear here</code></pre>
-        <div class="code-bottom-ribbon" id="code-bottom-ribbon">
-            <button id="refreshBtn" class="btn-moon btn-sm" title="Refresh">Refresh</button>
-            <button id="copyBtn" class="btn-moon btn-sm" title="Copy Code">Copy</button>
-            <button id="exportBtn" class="btn-moon btn-sm" title="Export">Export</button>
-        </div>
+                <div class="inspector-footnote"><span class="eyebrow">ARCHITECTURE, BEFORE EXECUTION</span><p>Shapes and counts are derived from the graph. Training and experiment tracking are planned.</p></div>
+            </aside>
+        </main>
+    </div>
+    <aside id="codeDrawer" class="code-drawer hidden" role="dialog" aria-modal="true" aria-labelledby="codeTitle" aria-hidden="true" inert>
+        <div class="code-drawer-header"><div><span class="eyebrow">GENERATED MODEL</span><h2 id="codeTitle">Model code <span id="codeFormatBadge"></span></h2></div><button id="btnCloseDrawer" class="icon-button" aria-label="Close model code">×</button></div>
+        <p id="codeMessage" class="code-message" role="status"></p>
+        <pre id="codeOutput" class="code-editor-area"><code></code></pre>
+        <div class="code-bottom-ribbon"><button id="refreshBtn">Refresh</button><button id="copyBtn">Copy code</button><button id="exportBtn" class="primary">Export .py</button></div>
     </aside>
-</div>
-
-<!-- Main Entry Point Script (using ES Modules) -->
-<script type="module" src="main.js"></script>
 </body>
 </html>

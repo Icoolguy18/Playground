@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Playground — Visual Architecture Builder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="reference.css">
+</head>
+<body>
+  <!-- Ambient Moonlight Backdrop -->
+  <div class="moonlight-backdrop"></div>
+
+  <div class="app-container">
+    <!-- =====================================================================
+         TOP NAVIGATION BAR
+         ===================================================================== -->
+    <header class="header-bar">
+      <div class="brand-section">
+        <div class="brand-logo" title="Model Playground">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <span class="brand-title">Model Playground</span>
+        <span class="brand-badge">IR v1.0</span>
+      </div>
+
+      <!-- Center Controls / Model Identifier -->
+      <div class="model-controls">
+        <input type="text" id="modelNameInput" class="model-name-input" value="CustomVisionModel" title="Model Name">
+        <select id="frameworkSelector" class="dropdown-select" title="Target Framework & Version">
+          <option value="pytorch_2">PyTorch 2.x (nn.Module)</option>
+          <option value="keras_3">Keras 3 / TensorFlow (Functional)</option>
+          <option value="onnx">ONNX Graph Spec</option>
+        </select>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="header-actions">
+        <button id="btnClear" class="btn-moon" title="Reset workspace">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Clear
+        </button>
+        <button id="btnCopyCode" class="btn-moon" title="Copy generated code">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Copy Code
+        </button>
+        <button id="btnExport" class="btn-moon btn-moon-primary" title="Export Model Code (.py)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export Script
+        </button>
+      </div>
+    </header>
+
+    <!-- =====================================================================
+         MAIN WORKSPACE LAYOUT
+         ===================================================================== -->
+    <main class="workspace-grid">
+      <!-- 1. LEFT SIDEBAR: LAYER PALETTE -->
+      <aside class="panel-sidebar">
+        <div class="panel-header">
+          <span class="panel-title">Layer Palette</span>
+          <span class="brand-badge" id="layerCountBadge">8 Layers</span>
+        </div>
+
+        <div class="search-box">
+          <input type="text" id="layerSearch" class="search-input" placeholder="Search layers (Conv, Dense...)" autocomplete="off">
+        </div>
+
+        <div class="palette-scroll" id="paletteList">
+          <!-- Input Group -->
+          <div class="category-group">
+            <div class="category-title">Input & Reshaping</div>
+            <div class="layer-card" draggable="true" data-type="Input">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-input">IN</span>
+                <span class="layer-name">Input Tensor</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+            <div class="layer-card" draggable="true" data-type="Flatten">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-linear">FL</span>
+                <span class="layer-name">Flatten</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+          </div>
+
+          <!-- Convolutions Group -->
+          <div class="category-group">
+            <div class="category-title">Convolutional</div>
+            <div class="layer-card" draggable="true" data-type="Conv2d">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-conv">C2</span>
+                <span class="layer-name">Conv2d</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+            <div class="layer-card" draggable="true" data-type="MaxPool2d">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-conv">MP</span>
+                <span class="layer-name">MaxPool2d</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+          </div>
+
+          <!-- Linear & Regularization -->
+          <div class="category-group">
+            <div class="category-title">Linear & Regularization</div>
+            <div class="layer-card" draggable="true" data-type="Linear">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-linear">FC</span>
+                <span class="layer-name">Linear (Dense)</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+            <div class="layer-card" draggable="true" data-type="Dropout">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-linear">DO</span>
+                <span class="layer-name">Dropout</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+            <div class="layer-card" draggable="true" data-type="BatchNorm2d">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-norm">BN</span>
+                <span class="layer-name">BatchNorm2d</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+          </div>
+
+          <!-- Activations -->
+          <div class="category-group">
+            <div class="category-title">Activations</div>
+            <div class="layer-card" draggable="true" data-type="ReLU">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-activation">RL</span>
+                <span class="layer-name">ReLU</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+            <div class="layer-card" draggable="true" data-type="Softmax">
+              <div class="layer-info">
+                <span class="layer-icon-badge badge-activation">SM</span>
+                <span class="layer-name">Softmax</span>
+              </div>
+              <span class="drag-handle">⠿</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 2. CENTER CANVAS: INTERACTIVE GRAPH -->
+      <section class="canvas-container" id="canvasContainer">
+        <!-- Floating Canvas Tools -->
+        <div class="canvas-toolbar">
+          <button class="tool-btn" id="btnZoomIn" title="Zoom In">+</button>
+          <button class="tool-btn" id="btnZoomOut" title="Zoom Out">−</button>
+          <button class="tool-btn" id="btnResetView" title="Reset View">⊙</button>
+          <span style="width: 1px; height: 16px; background: var(--border-moon-medium); margin: 0 4px;"></span>
+          <button class="tool-btn" id="btnAutoLayout" title="Auto Align">⌥</button>
+        </div>
+
+        <!-- SVG Connection Bezier Paths -->
+        <svg class="connections-layer" id="svgConnectionsLayer">
+          <!-- Dynamic Curves will be rendered here by reference.js -->
+        </svg>
+
+        <!-- Viewport & Graph Nodes -->
+        <div class="graph-viewport" id="graphViewport">
+          <!-- Dynamically populated or rendered nodes -->
+        </div>
+      </section>
+
+      <!-- 3. RIGHT SIDEBAR: INSPECTOR & CODE GENERATION -->
+      <aside class="panel-right">
+        <!-- Navigation Tabs -->
+        <div class="tabs-header">
+          <button class="tab-btn active" data-tab="tab-code">Live Code</button>
+          <button class="tab-btn" data-tab="tab-inspector">Inspector</button>
+          <button class="tab-btn" data-tab="tab-summary">Summary</button>
+        </div>
+
+        <!-- Tab 1: Live Generated Code -->
+        <div class="tab-content active" id="tab-code">
+          <div class="code-header-bar">
+            <span class="category-title" id="codeFormatBadge">PYTORCH 2.X DEFINITION</span>
+            <span class="brand-badge">Auto-Sync</span>
+          </div>
+          <div class="code-editor-area" id="codeEditor">
+            <!-- Rendered code highlights -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Node Parameter Inspector -->
+        <div class="tab-content" id="tab-inspector">
+          <div class="panel-header">
+            <span class="panel-title">Layer Properties</span>
+            <span class="brand-badge" id="selectedLayerType">Linear</span>
+          </div>
+          <div class="inspector-body" id="inspectorBody">
+            <div class="form-group">
+              <label class="form-label">Layer Name / Identifier</label>
+              <input type="text" id="propName" class="form-input" value="fc1">
+            </div>
+            <div class="form-group" id="groupInFeatures">
+              <label class="form-label">In Features / Channels</label>
+              <input type="number" id="propInFeatures" class="form-input" value="512">
+            </div>
+            <div class="form-group" id="groupOutFeatures">
+              <label class="form-label">Out Features / Channels</label>
+              <input type="number" id="propOutFeatures" class="form-input" value="128">
+            </div>
+            <div class="form-group" id="groupKernelSize" style="display: none;">
+              <label class="form-label">Kernel Size</label>
+              <input type="number" id="propKernel" class="form-input" value="3">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Use Bias</label>
+              <select id="propBias" class="dropdown-select" style="width: 100%;">
+                <option value="true">True</option>
+                <option value="false">False</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Model Architecture Summary -->
+        <div class="tab-content" id="tab-summary">
+          <div class="panel-header">
+            <span class="panel-title">Tensor Pipeline</span>
+          </div>
+          <div class="inspector-body">
+            <div style="font-size: 0.8rem; line-height: 1.8; color: var(--moon-mist);">
+              <div><strong style="color:#ffffff;">Estimated Parameters:</strong> ~1.2M</div>
+              <div><strong style="color:#ffffff;">Total Depth:</strong> 5 Layers</div>
+              <div><strong style="color:#ffffff;">Input Shape:</strong> (3, 224, 224)</div>
+              <div><strong style="color:#ffffff;">Output Shape:</strong> (10)</div>
+              <div style="margin-top: 14px; padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-moon-faint); border-radius: 6px;">
+                <span style="color: var(--lunar-cyan);">✓ Graph is acyclic and valid</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="reference.js"></script>
+</body>
+</html>

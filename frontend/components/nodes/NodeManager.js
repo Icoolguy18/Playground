@@ -1,144 +1,86 @@
-// components/nodes/NodeManager.js
-import { BADGE_MAP, DEFAULT_PARAMS } from '../Constants.js';
+import { DEFAULT_PARAMS, LAYER_CATALOG } from '../Constants.js';
+import { NODE_GROUPS, nodeGroup, applyNodeGroup } from '../NodeGroups.js';
 import { connectionManager } from './ConnectionManager.js';
-import { modelState } from "../ModelState.js";
+import { modelState } from '../ModelState.js';
 
 let nodeIdCounter = 1;
-
-export function spawnNode(type, x, y) {
-    const viewport = document.getElementById("graphViewport");
-    if (!viewport) return;
-
-    const id = `node_${nodeIdCounter}`;
-    const name = `${type.toLowerCase()}_${nodeIdCounter}`;
-    nodeIdCounter++;
-
-    const badgeClass = BADGE_MAP[type] || "badge-linear";
-    const shortCode = type.substring(0, 2).toUpperCase();
-    const params = {...(DEFAULT_PARAMS[type] || {})};
-    const paramRows = Object.entries(params).map(([key, val]) => `
-        <div class="node-param-row">
-            <span class="node-param-label">${key}</span>
-            <input type="text" class="node-param-input" data-param="${key}" value="${val}">
-        </div>
-    `).join("") || `
-        <div class="node-param-row">
-            <span class="node-param-label">type</span>
-            <span class="node-param-val">${type}</span>
-        </div>
-    `;
-
-    const node = document.createElement("div");
-    node.className = "graph-node";
+export function selectNode(id) {
+    window.dispatchEvent(new CustomEvent('nodeSelected', { detail: id }));
+}
+export function spawnNode(type, x = 50, y = 130, overrides = {}) {
+    if (!LAYER_CATALOG[type]) return null;
+    const id = `node_${nodeIdCounter++}`;
+    const params = { ...DEFAULT_PARAMS[type], ...overrides };
+    const node = document.createElement('article');
+    const kind = nodeGroup(type), metadata = LAYER_CATALOG[type];
     node.id = id;
+    node.className = 'graph-node';
+    node.dataset.type = type;
     node.style.left = `${x}px`;
     node.style.top = `${y}px`;
+    applyNodeGroup(node, kind);
     node.innerHTML = `
-        <div class="socket socket-input"></div>
-        <div class="node-header">
-            <div class="node-title-group">
-                <span class="layer-icon-badge ${badgeClass}">${shortCode}</span>
-                <span class="node-title">${name}</span>
-            </div>
-            <button class="node-delete-btn" title="Remove layer">✕</button>
-        </div>
-        <div class="node-body">${paramRows}</div>
-        <div class="socket socket-output"></div>
-    `;
-
-    // Delete button handler (Fixed: passed `node` to remove wires)
-    node.querySelector(".node-delete-btn").addEventListener("click", (e) => {
-        e.stopPropagation();
-        connectionManager.removeNodeConnections(node);
-        modelState.removeNode(id);
-        node.remove();
-        updateLayerCount();
-        window.dispatchEvent(new CustomEvent("modelGraphUpdated"));
+        <span class="node-kind">${NODE_GROUPS[kind].label} · ${id.slice(5).padStart(2, '0')}</span>
+        <button class="socket socket-input" aria-label="Connect to ${type}" title="Input"></button>
+        <button class="node-header" aria-label="Select ${type} ${id.slice(5)}">
+            <span class="layer-icon-badge">${metadata.code}</span>
+            <span><strong class="node-title">${type}</strong><small>${type.toLowerCase()}_${id.slice(5)}</small></span>
+        </button>
+        ${type === 'Linear' ? '<div class="node-body node-units-row"><span>output units</span><strong class="node-units"></strong></div>' : ''}
+        <div class="node-body"><span>output shape</span><strong class="node-shape">Unresolved</strong></div>
+        <div class="node-status" hidden></div>
+        <button class="node-delete-btn" title="Remove operator" aria-label="Remove ${type}">×</button>
+        <button class="socket socket-output" aria-label="Connect from ${type}" title="Output"></button>`;
+    node.addEventListener('click', event => {
+        if (!event.target.closest('.socket, .node-delete-btn')) selectNode(id);
     });
-
-    node.querySelectorAll(".node-param-input").forEach(input => {
-        input.addEventListener("mousedown", (e) => e.stopPropagation());
-        input.addEventListener("click", (e) => e.stopPropagation());
-
-        input.addEventListener("input", (e) => {
-            const paramKey = e.target.getAttribute("data-param");
-            const newValue = e.target.value;
-
-            const nodeData = modelState.nodes.get(id);
-            if (nodeData) {
-                nodeData.params[paramKey] = newValue;
-
-                window.dispatchEvent(new CustomEvent("modelGraphUpdated"));
-            }
-        });
-    });
-
-    modelState.addNode({id, type, params, x, y})
-
+    node.querySelector('.node-delete-btn').addEventListener('click', event => { event.stopPropagation(); removeNode(id); });
     enableNodeDrag(node);
-    console.debug(`Added Node to modelState with values ${id}, ${type}, ${params}, ${x}, ${y}`)
-    modelState.addNode({id, type, params, x, y});
-    viewport.appendChild(node);
+    document.getElementById('graphViewport').append(node);
     connectionManager.attachSocketListeners(node);
-    updateLayerCount();
-    window.dispatchEvent(new CustomEvent("modelGraphUpdated"));
+    modelState.addNode({ id, type, params, x, y });
+    selectNode(id);
+    return node;
 }
-
 function enableNodeDrag(node) {
-    let isDragging = false;
-    let startMouseX, startMouseY, startNodeX, startNodeY;
-
-    node.addEventListener("mousedown", (e) => {
-        if (e.target.classList.contains("socket")) return;
-
-        isDragging = true;
-        startMouseX = e.clientX;
-        startMouseY = e.clientY;
-        startNodeX = parseInt(node.style.left) || 0;
-        startNodeY = parseInt(node.style.top) || 0;
-
-        node.style.zIndex = 50;
-        e.preventDefault();
-    });
-
-    // Single unified mousemove handler (Fixed: combined movement & wire updating)
-    window.addEventListener("mousemove", (e) => {
-        if (!isDragging) return;
-        const dx = e.clientX - startMouseX;
-        const dy = e.clientY - startMouseY;
-        node.style.left = `${Math.max(0, startNodeX + dx)}px`;
-        node.style.top = `${Math.max(0, startNodeY + dy)}px`;
-
-        // Live update wires connected to this node using lowercase instance
-        connectionManager.updateNodeConnections(node);
-    });
-
-    window.addEventListener("mouseup", () => {
-        if (!isDragging) return;
-        isDragging = false;
-        node.style.zIndex = "";
+    const handle = node.querySelector('.node-header');
+    handle.addEventListener('pointerdown', event => {
+        if (event.button !== 0) return;
+        selectNode(node.id);
+        const start = { x: event.clientX, y: event.clientY, left: parseFloat(node.style.left), top: parseFloat(node.style.top) };
+        const scale = Number(document.getElementById('graphViewport').dataset.scale) || 1;
+        handle.setPointerCapture(event.pointerId);
+        const move = next => {
+            const x = Math.max(20, start.left + (next.clientX - start.x) / scale);
+            const y = Math.max(50, start.top + (next.clientY - start.y) / scale);
+            node.style.left = `${x}px`; node.style.top = `${y}px`;
+            modelState.updatePosition(node.id, x, y);
+            connectionManager.updateNodeConnections(node);
+            window.dispatchEvent(new CustomEvent('graphViewChanged'));
+        };
+        const finish = () => {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', finish);
+            handle.removeEventListener('pointercancel', finish);
+            handle.removeEventListener('lostpointercapture', finish);
+        };
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', finish);
+        handle.addEventListener('pointercancel', finish);
+        handle.addEventListener('lostpointercapture', finish);
     });
 }
-
+export function removeNode(id) {
+    const node = document.getElementById(id);
+    if (!node) return;
+    connectionManager.removeNodeConnections(node);
+    node.remove();
+    modelState.removeNode(id);
+}
 export function clearWorkspace() {
     connectionManager.clearAll();
-
-    modelState.nodes.clear();
-    modelState.edges = [];
-
-    const viewport = document.getElementById("graphViewport");
-    if (viewport) {
-        viewport.replaceChildren();
-    }
+    document.getElementById('graphViewport').replaceChildren();
     nodeIdCounter = 1;
-    updateLayerCount();
-}
-
-function updateLayerCount() {
-    const viewport = document.getElementById("graphViewport");
-    const count = viewport ? viewport.querySelectorAll(".graph-node").length : 0;
-    const badge = document.getElementById("modelLayerCount");
-    if (badge) {
-        badge.textContent = `${count} ${count === 1 ? "Layer" : "Layers"}`;
-    }
+    modelState.clear();
+    selectNode(null);
 }

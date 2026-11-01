@@ -1,29 +1,20 @@
-// components/LayerDragAndDrop.js
+// Palette buttons support click/keyboard insertion as well as drag and drop.
 export function initDragAndDrop(onDropCallback) {
-    const layerCards = document.querySelectorAll(".layer-card");
-    const canvasContainer = document.getElementById("canvasContainer");
-
-    layerCards.forEach(card => {
-        card.addEventListener("dragstart", (e) => {
-            e.dataTransfer.setData("layerType", card.getAttribute("data-type"));
-            e.dataTransfer.effectAllowed = "copy";
+    const canvas = document.getElementById('canvasContainer');
+    const viewport = document.getElementById('graphViewport');
+    document.querySelectorAll('.layer-card').forEach(card => {
+        card.addEventListener('dragstart', event => {
+            event.dataTransfer.setData('layerType', card.dataset.type);
+            event.dataTransfer.effectAllowed = 'copy';
         });
+        card.addEventListener('click', () => onDropCallback(card.dataset.type));
     });
-
-    canvasContainer.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = "copy";
-    });
-
-    canvasContainer.addEventListener("drop", (e) => {
-        e.preventDefault();
-        const layerType = e.dataTransfer.getData("layerType");
-        if (!layerType) return;
-
-        const canvasRect = canvasContainer.getBoundingClientRect();
-        const dropX = Math.max(10, e.clientX - canvasRect.left - 95);
-        const dropY = Math.max(10, e.clientY - canvasRect.top - 30);
-
-        onDropCallback(layerType, dropX, dropY);
+    canvas.addEventListener('dragover', event => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; });
+    canvas.addEventListener('drop', event => {
+        event.preventDefault();
+        const type = event.dataTransfer.getData('layerType');
+        if (!type) return;
+        const rect = viewport.getBoundingClientRect(), scale = Number(viewport.dataset.scale) || 1;
+        onDropCallback(type, Math.max(20, (event.clientX - rect.left) / scale - 96), Math.max(50, (event.clientY - rect.top) / scale - 35));
     });
 }

@@ -1,157 +1,139 @@
-import { modelState } from "../ModelState.js";
+import { modelState } from '../ModelState.js';
 
-
-export const connectionManager = new class ConnectionManager {
+class ConnectionManager {
     constructor() {
         this.connections = [];
         this.isConnecting = false;
         this.activeSourceSocket = null;
         this.tempPathEl = null;
-
-        this.svgLayer = document.getElementById("svgConnectionsLayer");
-        this.viewport = document.getElementById("graphViewport");
-
-        this.initGlobalListeners();
+        this.routing = 'curve';
+        this.svgLayer = document.getElementById('svgConnectionsLayer');
+        this.viewport = document.getElementById('graphViewport');
+        window.addEventListener('pointermove', event => {
+            if (!this.isConnecting) return;
+            const start = this.getSocketCenter(this.activeSourceSocket);
+            const end = this.getCanvasRelativeCoords(event.clientX, event.clientY);
+            this.tempPathEl.setAttribute('d', this.getBezierPath(start.x, start.y, end.x, end.y));
+        });
+        window.addEventListener('pointerup', event => {
+            if (!this.isConnecting) return;
+            const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.socket-input');
+            if (target) this.completeConnection(target);
+            else if (event.target !== this.activeSourceSocket) this.cancelConnection();
+        });
+        window.addEventListener('pointercancel', () => this.cancelConnection());
+        window.addEventListener('keydown', event => { if (event.key === 'Escape') this.cancelConnection(); });
     }
 
-    initGlobalListeners() {
-        window.addEventListener("mousemove", (e) => {
-            if (!this.isConnecting || !this.tempPathEl) return;
-            const targetCoords = this.getCanvasRelativeCoords(e.clientX, e.clientY);
-            const sourceCoords = this.getSocketCenter(this.activeSourceSocket);
-
-            this.tempPathEl.setAttribute("d", this.getBezierPath(sourceCoords.x, sourceCoords.y, targetCoords.x, targetCoords.y));
+    notice(message) { window.dispatchEvent(new CustomEvent('workspaceNotice', { detail: message })); }
+    attachSocketListeners(node) {
+        const output = node.querySelector('.socket-output');
+        const input = node.querySelector('.socket-input');
+        output.addEventListener('pointerdown', event => {
+            if (event.button !== 0) return;
+            event.stopPropagation();
+            this.startConnection(output);
         });
-
-        window.addEventListener("mouseup", () => {
-            if (this.isConnecting) {
-                this.cancelConnection();
+        output.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); this.startConnection(output);
+            }
+        });
+        input.addEventListener('keydown', event => {
+            if (this.isConnecting && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault(); this.completeConnection(input);
             }
         });
     }
-
-    attachSocketListeners(nodeElement) {
-        const outputSocket = nodeElement.querySelector(".socket-output");
-        const inputSocket = nodeElement.querySelector(".socket-input");
-
-        if (outputSocket) {
-            outputSocket.addEventListener("mousedown", (e) => {
-                e.stopPropagation();
-                this.startConnection(outputSocket);
-            });
-        }
-
-        if (inputSocket) {
-            inputSocket.addEventListener("mouseup", (e) => {
-                e.stopPropagation();
-                if (this.isConnecting) {
-                    this.completeConnection(inputSocket);
-                }
-            });
-        }
-    }
-
     startConnection(socket) {
+        this.cancelConnection();
         this.isConnecting = true;
         this.activeSourceSocket = socket;
-
-        this.tempPathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        this.tempPathEl.setAttribute("class", "connection-path temp-wire");
-        this.svgLayer.appendChild(this.tempPathEl);
+        this.tempPathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        this.tempPathEl.setAttribute('class', 'connection-path temp-wire');
+        this.svgLayer.append(this.tempPathEl);
+        this.notice('Choose an input socket to complete the connection. Escape cancels.');
     }
-
     completeConnection(targetSocket) {
-        const sourceNode = this.activeSourceSocket.closest(".graph-node");
-        const targetNode = targetSocket.closest(".graph-node");
-
-        if (sourceNode === targetNode) {
-            this.cancelConnection();
-            return;
-        }
-
-        const exists = this.connections.some(
-            c => c.fromSocket === this.activeSourceSocket && c.toSocket === targetSocket
-        );
-
-        if (!exists) {
-            const pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            pathEl.setAttribute("class", "connection-path");
-            this.svgLayer.appendChild(pathEl);
-
-            const connection = {
-                fromNode: sourceNode,
-                toNode: targetNode,
-                fromSocket: this.activeSourceSocket,
-                toSocket: targetSocket,
-                pathEl: pathEl
-            };
-
-            this.connections.push(connection);
-            this.updateConnectionPath(connection);
-        }
-        console.log(`established connection between nodes ${sourceNode.id} to  ${targetNode.id}, should call the method addEdge`);
-        modelState.addEdge(sourceNode.id, targetNode.id);
+        if (!this.activeSourceSocket) return;
+        const source = this.activeSourceSocket.closest('.graph-node');
+        const target = targetSocket.closest('.graph-node');
         this.cancelConnection();
+        this.connectNodes(source, target);
     }
-
+    connectNodes(source, target) {
+        const error = modelState.validateEdge(source.id, target.id);
+        if (error) { this.notice(error); return false; }
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('class', 'connection-path');
+        pathEl.setAttribute('tabindex', '0');
+        pathEl.setAttribute('role', 'button');
+        pathEl.setAttribute('aria-label', `Remove connection from ${source.dataset.type} to ${target.dataset.type}`);
+        const connection = {
+            fromNode: source, toNode: target,
+            fromSocket: source.querySelector('.socket-output'),
+            toSocket: target.querySelector('.socket-input'), pathEl
+        };
+        pathEl.addEventListener('click', () => this.removeConnection(connection));
+        pathEl.addEventListener('keydown', event => {
+            if (['Delete', 'Backspace', 'Enter'].includes(event.key)) {
+                event.preventDefault(); this.removeConnection(connection);
+            }
+        });
+        this.connections.push(connection);
+        this.svgLayer.append(pathEl);
+        this.updateConnectionPath(connection);
+        modelState.addEdge(source.id, target.id);
+        this.notice('Connection added.');
+        return true;
+    }
+    removeConnection(connection) {
+        connection.pathEl.remove();
+        this.connections = this.connections.filter(item => item !== connection);
+        modelState.removeEdge(connection.fromNode.id, connection.toNode.id);
+        this.notice('Connection removed.');
+    }
     cancelConnection() {
-        if (this.tempPathEl) {
-            this.tempPathEl.remove();
-            this.tempPathEl = null;
-        }
+        this.tempPathEl?.remove();
+        this.tempPathEl = null;
         this.isConnecting = false;
         this.activeSourceSocket = null;
     }
-
-    updateNodeConnections(nodeElement) {
-        this.connections.forEach(conn => {
-            if (conn.fromNode === nodeElement || conn.toNode === nodeElement) {
-                this.updateConnectionPath(conn);
-            }
-        });
+    updateNodeConnections(node) {
+        this.connections.filter(item => item.fromNode === node || item.toNode === node).forEach(item => this.updateConnectionPath(item));
     }
-
-    updateConnectionPath(conn) {
-        const start = this.getSocketCenter(conn.fromSocket);
-        const end = this.getSocketCenter(conn.toSocket);
-        conn.pathEl.setAttribute("d", this.getBezierPath(start.x, start.y, end.x, end.y));
+    updateAll() { this.connections.forEach(item => this.updateConnectionPath(item)); }
+    updateConnectionPath(connection) {
+        const a = this.getSocketCenter(connection.fromSocket), b = this.getSocketCenter(connection.toSocket);
+        connection.pathEl.setAttribute('d', this.getBezierPath(a.x, a.y, b.x, b.y));
     }
-
     getBezierPath(x1, y1, x2, y2) {
-        const dx = Math.abs(x2 - x1) * 0.5;
-        return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+        if (this.routing === 'elbow') {
+            const mid = (x1 + x2) / 2;
+            return `M ${x1} ${y1} H ${mid} V ${y2} H ${x2}`;
+        }
+        const bend = Math.max(60, Math.abs(x2 - x1) * 0.48);
+        return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
     }
-
-    getSocketCenter(socketEl) {
-        const viewportRect = this.viewport.getBoundingClientRect();
-        const socketRect = socketEl.getBoundingClientRect();
-        return {
-            x: socketRect.left - viewportRect.left + socketRect.width / 2,
-            y: socketRect.top - viewportRect.top + socketRect.height / 2
-        };
+    getSocketCenter(socket) {
+        const rect = socket.getBoundingClientRect();
+        return this.getCanvasRelativeCoords(rect.left + rect.width / 2, rect.top + rect.height / 2);
     }
-
     getCanvasRelativeCoords(clientX, clientY) {
-        const viewportRect = this.viewport.getBoundingClientRect();
-        return {
-            x: clientX - viewportRect.left,
-            y: clientY - viewportRect.top
-        };
+        const rect = this.viewport.getBoundingClientRect(), scale = Number(this.viewport.dataset.scale) || 1;
+        return { x: (clientX - rect.left) / scale, y: (clientY - rect.top) / scale };
     }
-
-    removeNodeConnections(nodeElement) {
-        this.connections = this.connections.filter(conn => {
-            if (conn.fromNode === nodeElement || conn.toNode === nodeElement) {
-                conn.pathEl.remove();
-                return false;
-            }
-            return true;
+    removeNodeConnections(node) {
+        this.connections = this.connections.filter(item => {
+            if (item.fromNode !== node && item.toNode !== node) return true;
+            item.pathEl.remove(); return false;
         });
+        this.cancelConnection();
     }
-
     clearAll() {
-        this.connections.forEach(conn => conn.pathEl.remove());
+        this.connections.forEach(item => item.pathEl.remove());
         this.connections = [];
         this.cancelConnection();
     }
 }
+export const connectionManager = new ConnectionManager();

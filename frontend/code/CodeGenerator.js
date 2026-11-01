@@ -1,7 +1,6 @@
-import { ModelState } from "../components/ModelState";
+import { modelState } from "../components/ModelState";
 import { PyTorchEmitter } from "../emmiters/PyTorchEmmiter";
 
-const modelState = new ModelState();
 
 export function updateCodeView(){
     const graph = modelState.getGraph();

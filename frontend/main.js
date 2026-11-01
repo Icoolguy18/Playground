@@ -1,49 +1,17 @@
-// main.js
 import { codeDrawer } from './components/CodeDrawer.js';
 import { initDragAndDrop } from './components/LayerDragAndDrop.js';
-import { spawnNode, clearWorkspace } from './components/nodes/nodeManager.js';
-import { modelState } from "./components/ModelState.js";
+import { clearWorkspace } from './components/nodes/NodeManager.js';
+import { modelState } from './components/ModelState.js';
+import { initWorkspace, insertOperator } from './components/Workspace.js';
 
-console.log("main.js is running");
-console.debug("Loaded Model State");
-console.debug("Loaded code drawer");
+initWorkspace();
+initDragAndDrop(insertOperator);
+document.getElementById('btnClear').addEventListener('click', clearWorkspace);
 
-const togglePaletteBtn = document.getElementById("btnTogglePalette");
-if (togglePaletteBtn) {
-    togglePaletteBtn.addEventListener("click", () => {
-        document.getElementById("layerPalette").classList.toggle("collapsed");
-    });
-}
-
-initDragAndDrop((type, x, y) => {
-    spawnNode(type, x, y);
-});
-
-const btnClear = document.getElementById("btnClear");
-if (btnClear) {
-    btnClear.addEventListener("click", clearWorkspace);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const frameworkSelector = document.getElementById("frameworkSelector");
-    if (frameworkSelector) {
-        frameworkSelector.addEventListener("change", (e) => {
-            modelState.setFramework(e.target.value);
-            codeDrawer.refreshCode()
-        });
-    }
-
-    const modelNameInput = document.getElementById("modelNameInput");
-    if (modelNameInput) {
-        modelNameInput.addEventListener("change", (e) => {
-            modelState.setModelName(e.target.value.trim());
-            codeDrawer.refreshCode()
-        })
-    }
-})
-
-window.addEventListener("modelGraphUpdated", () => {
-    if (!codeDrawer.drawer.classList.contains("hidden")) {
-        codeDrawer.refreshCode();
-    }
+const nameInput = document.getElementById('modelNameInput');
+nameInput.value = modelState.modelName;
+nameInput.addEventListener('input', () => modelState.setModelName(nameInput.value.trim()));
+document.getElementById('frameworkSelector').addEventListener('change', event => modelState.setFramework(event.target.value));
+window.addEventListener('modelGraphUpdated', () => {
+    if (!codeDrawer.drawer.classList.contains('hidden')) codeDrawer.refreshCode();
 });

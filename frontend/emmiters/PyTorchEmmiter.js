@@ -1,45 +1,19 @@
-import { TopologicalSort } from "../util/graphHelpers.js";
+import { prepareGraph, pythonScalar } from '../util/prepareGraph.js';
 
 export class PyTorchEmitter {
-    static generate(graph){
-        console.debug(`Generating graph for graph ${graph.nodes}`);
-        const sortedNodes = TopologicalSort(graph.nodes, graph.edges)
-
-        let initLines = [];
-        let forwardLines = [];
-        let prevVar = "x";
-
-        sortedNodes.forEach((node, index) => {
-            console.debug(`Running for each node, with node values 
-            idx: ${index}
-            nodeType: ${node.type}
-            `);
-            if (node.type === "Input" ) return; // Input handled in the forward pass signature
-
+    static generate(graph) {
+        const { sorted, input, parents, terminals } = prepareGraph(graph);
+        const initLines = [], forwardLines = [], values = new Map([[input.id, 'x']]);
+        sorted.forEach((node, index) => {
+            if (node.type === 'Input') return;
             const layerName = `${node.type.toLowerCase()}_${index}`;
-            const paramString = Object.entries(node.params)
-                .map(([key, value]) => `${key} = ${value}`)
-                .join(", ")
-
-            initLines.push(`self.${layerName} = nn.${node.type}(${paramString})`);
-            const nextVar = `out_${index}`;
-            forwardLines.push(`        ${nextVar} = self.${layerName}(${prevVar})`);
-            prevVar = nextVar;
-
+            const params = Object.entries(node.params).map(([key, value]) => `${key}=${pythonScalar(value)}`).join(', ');
+            initLines.push(`        self.${layerName} = nn.${node.type}(${params})`);
+            const output = `out_${index}`;
+            forwardLines.push(`        ${output} = self.${layerName}(${values.get(parents.get(node.id))})`);
+            values.set(node.id, output);
         });
-
-        console.debug(`initlines ${initLines.length}`) // this returns 0
-        return `import torch
-from torch import nn
-    
-class ${graph.modelName}(nn.Module):
-    def __init__(self):
-        super().__init__()
-${initLines.map(line => `    ${line}`).join('\n')}
-        
-    def forward(self, x):
-${forwardLines.map(line => `    ${line}`).join("\n")}
-        return ${prevVar}
-        `;
+        const outputs = terminals.map(node => values.get(node.id));
+        return `import torch\nfrom torch import nn\n\n\nclass ${graph.modelName}(nn.Module):\n    def __init__(self):\n        super().__init__()\n${initLines.join('\n')}\n\n    def forward(self, x):\n${forwardLines.join('\n')}${forwardLines.length ? '\n' : ''}        return ${outputs.length === 1 ? outputs[0] : `(${outputs.join(', ')})`}\n`;
     }
 }
