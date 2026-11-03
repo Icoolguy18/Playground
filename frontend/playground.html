@@ -53,102 +53,42 @@
     <main class="workspace-grid">
 
         <!-- COMPONENT A: LAYER SELECTION PALETTE -->
-        <aside class="panel-sidebar" id="layerPalette">
+        <aside class="panel-sidebar" id="layerPalette"
+               aria-label="Component browser">
             <div class="panel-header">
                 <h2 class="panel-title">Component browser</h2>
-                <p class="panel-description">Drag an operator onto the canvas.</p>
+                <p class="panel-description">
+                    Click to add, or drag an operator onto the canvas.
+                </p>
             </div>
 
             <div class="search-box">
-                <label class="sr-only" for="layerSearch">Find an operator</label>
-                <input type="search" id="layerSearch" class="search-input" placeholder="Find an operator" autocomplete="off">
+                <label class="sr-only" for="layerSearch">
+                    Find an operator
+                </label>
+                <input
+                        type="search"
+                        id="layerSearch"
+                        class="search-input"
+                        placeholder="Find an operator"
+                        autocomplete="off"
+                        aria-controls="paletteList"
+                >
             </div>
 
-            <div class="palette-scroll" id="paletteList">
-                <!-- 1. Input & Reshaping -->
-                <div class="category-group">
-                    <div class="category-title">Input & Reshaping</div>
-                    <div class="layer-card" draggable="true" data-type="Input">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-input">IN</span>
-                            <span class="layer-name">Input Tensor</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="Flatten">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-linear">FL</span>
-                            <span class="layer-name">Flatten</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
-
-                <!-- 2. Convolutional -->
-                <div class="category-group">
-                    <div class="category-title">Convolutional</div>
-                    <div class="layer-card" draggable="true" data-type="Conv2d">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-conv">C2</span>
-                            <span class="layer-name">Conv2d</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="MaxPool2d">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-conv">MP</span>
-                            <span class="layer-name">MaxPool2d</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
-
-                <!-- 3. Linear & Normalization -->
-                <div class="category-group">
-                    <div class="category-title">Linear & Normalization</div>
-                    <div class="layer-card" draggable="true" data-type="Linear">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-linear">FC</span>
-                            <span class="layer-name">Linear (Dense)</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="Dropout">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-linear">DO</span>
-                            <span class="layer-name">Dropout</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="BatchNorm2d">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-norm">BN</span>
-                            <span class="layer-name">BatchNorm2d</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
-
-                <!-- 4. Activations -->
-                <div class="category-group">
-                    <div class="category-title">Activations</div>
-                    <div class="layer-card" draggable="true" data-type="ReLU">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-activation">RL</span>
-                            <span class="layer-name">ReLU</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                    <div class="layer-card" draggable="true" data-type="Softmax">
-                        <div class="layer-info">
-                            <span class="layer-icon-badge badge-activation">SM</span>
-                            <span class="layer-name">Softmax</span>
-                        </div>
-                        <span class="drag-handle">⠿</span>
-                    </div>
-                </div>
+            <div class="palette-scroll">
+                <div id="paletteList"></div>
+                <p id="noSearchResults" class="empty-result"
+                   role="status" hidden>
+                    No operators match your search.
+                </p>
             </div>
-            <div class="browser-help"><strong>Connect the architecture.</strong>Drag from an output socket to an input socket. Edit parameters directly on each operator.</div>
+
+            <div class="browser-help">
+                <strong>Connect the architecture.</strong>
+                Drag from an output socket to an input socket.
+                Edit parameters directly on each operator.
+            </div>
         </aside>
 
         <!-- COMPONENT B: DISPLAY & CONNECTIONS CANVAS -->

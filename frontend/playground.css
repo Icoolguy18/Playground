@@ -59,9 +59,43 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .search-input::placeholder { color: var(--muted); opacity: 1; }
 .palette-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 18px; }
 .category-group { margin-top: 20px; --group-ink: #49645a; --group-tint: #c7d0bf; }
-.category-group:nth-child(2) { --group-ink: #785b3e; --group-tint: #ddd0b8; }
-.category-group:nth-child(3) { --group-ink: #5d6074; --group-tint: #d0cdd8; }
-.category-group:nth-child(4) { --group-ink: #814e59; --group-tint: #dec6c5; }
+/* Filtering must override the cards' display: flex rule. */
+[hidden] {
+    display: none !important;
+}
+
+/* Palette cards are now native buttons. */
+.layer-card {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-left: 3px solid var(--group-ink);
+    text-align: left;
+    font: inherit;
+}
+
+/* Stable role styling, independent of category order. */
+.layer-card[data-kind="input"] {
+    --group-ink: #49645a;
+    --group-tint: #c7d0bf;
+}
+
+.layer-card[data-kind="layer"] {
+    --group-ink: #5d6074;
+    --group-tint: #d0cdd8;
+}
+
+.layer-card[data-kind="activation"] {
+    --group-ink: #814e59;
+    --group-tint: #dec6c5;
+}
+
+.empty-result {
+    padding: 20px 2px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+}
 .category-title { margin: 0 0 10px; font-size: 9px; letter-spacing: .7px; font-weight: 600; text-transform: uppercase; color: var(--muted); }
 .layer-card { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-left: 3px solid var(--group-ink); margin: 5px 0; padding: 8px; cursor: grab; user-select: none; border-radius: 3px; }
 .layer-card:hover { background: var(--group-tint); }
