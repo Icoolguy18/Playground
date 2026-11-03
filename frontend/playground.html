@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="playground.css">
-    <title>Model Playground</title>
+    <meta name="color-scheme" content="light">
+    <title>Model Playground — Neural / paper clay</title>
 </head>
 <body>
-<div class="playground-backdrop"></div>
 <div class="playground-container">
     <header class="header-bar">
         <div class="brand-section">
             <!-- Toggle Layer Palette Button -->
-            <button id="btnTogglePalette" class="tool-btn" title="Toggle Layer Palette">
+            <button id="btnTogglePalette" class="tool-btn" title="Toggle component browser" aria-label="Toggle component browser" aria-controls="layerPalette">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                     <line x1="9" y1="3" x2="9" y2="21"></line>
@@ -26,29 +26,25 @@
                     <polyline points="2 12 12 17 22 12"></polyline>
                 </svg>
             </div>
-            <span class="brand-title">Model Playground</span>
+            <span class="brand-title">Model Playground<span class="brand-edition">RESEARCH</span></span>
         </div>
 
         <!-- Center Controls / Model Identifier -->
         <div class="model-controls">
+            <span class="session-dot" aria-hidden="true"></span>
+            <label class="sr-only" for="modelNameInput">Model name</label>
             <input type="text" id="modelNameInput" class="model-name-input" value="customModel" title="Model Name">
-            <select id="frameworkSelector" class="dropdown-select" title="Target Framework & Version">
-                <option value="pytorch_2">PyTorch 2.x (nn.Module)</option>
-                <option value="keras_3">Keras 3 / TensorFlow (Functional)</option>
-                <option value="onnx">ONNX Graph Spec</option>
-            </select>
-            <!-- Dynamic Model Layer Counter -->
-            <span class="brand-badge" id="modelLayerCount">0 Layers</span>
+
         </div>
 
         <div class="header-actions">
-            <button id="btnToggleCode" class="btn-moon btn-moon-primary">View Code</button>
+            <button id="btnToggleCode" class="btn-moon btn-moon-primary">View code ↗</button>
             <button id="btnClear" class="btn-moon" title="Reset workspace">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
-                Clear
+                Clear graph
             </button>
         </div>
     </header>
@@ -59,11 +55,13 @@
         <!-- COMPONENT A: LAYER SELECTION PALETTE -->
         <aside class="panel-sidebar" id="layerPalette">
             <div class="panel-header">
-                <span class="panel-title">Layer Palette</span>
+                <h2 class="panel-title">Component browser</h2>
+                <p class="panel-description">Drag an operator onto the canvas.</p>
             </div>
 
             <div class="search-box">
-                <input type="text" id="layerSearch" class="search-input" placeholder="Search layers..." autocomplete="off">
+                <label class="sr-only" for="layerSearch">Find an operator</label>
+                <input type="search" id="layerSearch" class="search-input" placeholder="Find an operator" autocomplete="off">
             </div>
 
             <div class="palette-scroll" id="paletteList">
@@ -150,32 +148,54 @@
                     </div>
                 </div>
             </div>
+            <div class="browser-help"><strong>Connect the architecture.</strong>Drag from an output socket to an input socket. Edit parameters directly on each operator.</div>
         </aside>
 
         <!-- COMPONENT B: DISPLAY & CONNECTIONS CANVAS -->
-        <section class="canvas-container" id="canvasContainer">
+        <section class="model-workspace" aria-label="Model architecture">
+            <div class="workspace-heading">
+                <div><span class="eyebrow">NEURAL / PAPER CLAY</span><h1>Architecture workspace</h1></div>
+                <span class="brand-badge" id="modelLayerCount" aria-live="polite">0 Layers</span>
+            </div>
+            <div class="workspace-options">
+                <label for="frameworkSelector">Target framework
+            <select id="frameworkSelector" class="dropdown-select" title="Target Framework & Version">
+                <option value="pytorch_2">PyTorch 2.x (nn.Module)</option>
+                <option value="keras_3">Keras 3 / TensorFlow (Functional)</option>
+                <option value="onnx">ONNX Graph Spec</option>
+            </select>
+                </label>
+            </div>
+        <section class="canvas-container" id="canvasContainer" aria-label="Architecture canvas">
             <div class="canvas-toolbar">
                 <button class="tool-btn" id="btnZoomIn" title="Zoom In">+</button>
                 <button class="tool-btn" id="btnZoomOut" title="Zoom Out">−</button>
                 <button class="tool-btn" id="btnResetView" title="Reset View">⊙</button>
-                <span style="width: 1px; height: 16px; background: var(--border-moon-medium); margin: 0 4px;"></span>
+                <span class="toolbar-divider" aria-hidden="true"></span>
                 <button class="tool-btn" id="btnAutoLayout" title="Auto Align">⌥</button>
             </div>
 
-            <svg class="connections-layer" id="svgConnectionsLayer"></svg>
+            <div class="canvas-hint">
+                <span class="empty-graph-mark" aria-hidden="true">□ ─ □ ─ □</span>
+                <h2>Start with an input tensor.</h2>
+                <p>Drag an operator from the component browser to build your architecture.</p>
+            </div>
+            <svg class="connections-layer" id="svgConnectionsLayer" aria-label="Tensor connections"></svg>
             <div class="graph-viewport" id="graphViewport"></div>
+        </section>
+            <footer class="workspace-footer"><span>Architecture, before execution</span><span>Local session · export code before leaving</span></footer>
         </section>
     </main>
 
     <!-- CODE DRAWER -->
-    <aside id="codeDrawer" class="code-drawer hidden">
+    <aside id="codeDrawer" class="code-drawer hidden" aria-label="Generated model code">
         <div class="code-drawer-header">
             <div class="code-drawer-title">
                 <span>Model Code</span>
                 <span class="brand-badge" id="codeFormatBadge">{PyTorch 2.x}</span>
             </div>
             <div class="drawer-actions">
-                <button id="btnCloseDrawer" class="tool-btn" title="Close Drawer">✕</button>
+                <button id="btnCloseDrawer" class="tool-btn" title="Close Drawer" aria-label="Close model code">✕</button>
             </div>
         </div>
         <pre class="code-editor-area" id="codeOutput"><code># Generated code will appear here</code></pre>
